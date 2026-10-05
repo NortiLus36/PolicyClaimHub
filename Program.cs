@@ -1,8 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using PolicyClaimHub.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
 
+builder.Services.AddControllersWithViews();
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "ไม่พบ Connection String ชื่อ DefaultConnection");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
