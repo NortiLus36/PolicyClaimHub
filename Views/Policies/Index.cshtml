@@ -1,0 +1,97 @@
+﻿@model IEnumerable<PolicyClaimHub.Models.InsurancePolicy>
+
+@{
+    ViewData["Title"] = "รายการกรมธรรม์";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>รายการกรมธรรม์</h1>
+
+    <a asp-action="Create" class="btn btn-primary">
+        เพิ่มกรมธรรม์
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        ยังไม่มีข้อมูลกรมธรรม์ในระบบ
+    </div>
+}
+else
+{
+    <p>พบข้อมูลกรมธรรม์ทั้งหมด @Model.Count() รายการ</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>เลขกรมธรรม์</th>
+                    <th>ชื่อผู้เอาประกัน</th>
+                    <th class="text-end">ทุนประกัน</th>
+                    <th class="text-end">เบี้ยประกัน</th>
+                    <th>ระยะเวลาคุ้มครอง</th>
+                    <th>สถานะ</th>
+                    <th class="text-center">จัดการ</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var policy in Model)
+                {
+                    <tr>
+                        <td>@policy.PolicyNumber</td>
+                        <td>@policy.InsuredName</td>
+
+                        <td class="text-end">
+                            @policy.SumAssured.ToString("N2")
+                        </td>
+
+                        <td class="text-end">
+                            @policy.PremiumAmount.ToString("N2")
+                        </td>
+
+                        <td>
+                            @policy.CoverageStartDate.ToString("dd/MM/yyyy")
+                            -
+                            @policy.CoverageEndDate.ToString("dd/MM/yyyy")
+                        </td>
+
+                        <td>
+                            @Html.DisplayFor(modelItem => policy.Status)
+                        </td>
+
+                        <td class="text-center text-nowrap">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Details"
+                                   asp-route-id="@policy.Id"
+                                   class="btn btn-outline-info">
+                                    รายละเอียด
+                                </a>
+
+                                <a asp-action="Edit"
+                                   asp-route-id="@policy.Id"
+                                   class="btn btn-outline-warning">
+                                    แก้ไข
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@policy.Id"
+                                   class="btn btn-outline-danger">
+                                    ลบ
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,80 @@
+﻿@model PolicyClaimHub.Models.InsurancePolicy
+
+@{
+    ViewData["Title"] = "รายละเอียดกรมธรรม์";
+}
+
+<h1>รายละเอียดกรมธรรม์</h1>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.PolicyNumber)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.PolicyNumber
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.InsuredName)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.InsuredName
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.SumAssured)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.SumAssured.ToString("N2")
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.PremiumAmount)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.PremiumAmount.ToString("N2")
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.CoverageStartDate)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.CoverageStartDate.ToString("dd/MM/yyyy")
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.CoverageEndDate)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.CoverageEndDate.ToString("dd/MM/yyyy")
+            </dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.Status)
+            </dt>
+            <dd class="col-sm-8">
+                @Html.DisplayFor(model => model.Status)
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Edit"
+       asp-route-id="@Model.Id"
+       class="btn btn-warning">
+        แก้ไข
+    </a>
+
+    <a asp-action="Delete"
+       asp-route-id="@Model.Id"
+       class="btn btn-danger">
+        ลบ
+    </a>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        กลับหน้ารายการ
+    </a>
+</div>
