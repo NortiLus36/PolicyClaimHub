@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PolicyClaimHub.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
@@ -55,6 +56,31 @@
                                asp-controller="Policies"
                                asp-action="Index">
                                 กรมธรรม์
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Products" ? "active" : null)"
+                               asp-controller="Products"
+                               asp-action="Index">
+                                ผลิตภัณฑ์
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Portfolio" ? "active" : null)"
+                               asp-controller="Portfolio"
+                               asp-action="Index">
+                                วิเคราะห์ลูกค้า
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Dashboard" ? "active" : null)"
+                               asp-area=""
+                               asp-controller="Dashboard"
+                               asp-action="Index">
+                                Dashboard น้ำท่วม
                             </a>
                         </li>
 

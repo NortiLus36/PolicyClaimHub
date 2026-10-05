@@ -1,84 +1,20 @@
-﻿@model PolicyClaimHub.Models.InsurancePolicy
+@model PolicyClaimHub.Models.InsurancePolicy
 
 @{
     ViewData["Title"] = "เพิ่มกรมธรรม์";
 }
 
 <h1>เพิ่มกรมธรรม์</h1>
+<p class="text-muted">บันทึกข้อมูลลูกค้า รถยนต์ ผลิตภัณฑ์ และความคุ้มครองในหน้าเดียว</p>
 
 <form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly"
-         class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <partial name="_PolicyFormFields" model="Model" />
 
-    <div class="mb-3">
-        <label asp-for="PolicyNumber" class="form-label"></label>
-        <input asp-for="PolicyNumber" class="form-control" />
-        <span asp-validation-for="PolicyNumber"
-              class="text-danger"></span>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">บันทึก</button>
+        <a asp-action="Index" class="btn btn-secondary">กลับหน้ารายการ</a>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="InsuredName" class="form-label"></label>
-        <input asp-for="InsuredName" class="form-control" />
-        <span asp-validation-for="InsuredName"
-              class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="SumAssured" class="form-label"></label>
-        <input asp-for="SumAssured"
-               class="form-control"
-               type="number"
-               min="1"
-               step="0.01" />
-        <span asp-validation-for="SumAssured"
-              class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="PremiumAmount" class="form-label"></label>
-        <input asp-for="PremiumAmount"
-               class="form-control"
-               type="number"
-               min="1"
-               step="0.01" />
-        <span asp-validation-for="PremiumAmount"
-              class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CoverageStartDate" class="form-label"></label>
-        <input asp-for="CoverageStartDate"
-               class="form-control"
-               type="date" />
-        <span asp-validation-for="CoverageStartDate"
-              class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CoverageEndDate" class="form-label"></label>
-        <input asp-for="CoverageEndDate"
-               class="form-control"
-               type="date" />
-        <span asp-validation-for="CoverageEndDate"
-              class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Status" class="form-label"></label>
-        <select asp-for="Status"
-                asp-items="Html.GetEnumSelectList<PolicyClaimHub.Models.PolicyStatus>()"
-                class="form-select">
-        </select>
-        <span asp-validation-for="Status"
-              class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">
-        บันทึก
-    </button>
-
-    <a asp-action="Index" class="btn btn-secondary">
-        กลับหน้ารายการ
-    </a>
 </form>
 
 @section Scripts {

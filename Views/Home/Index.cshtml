@@ -1,8 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "หน้าหลัก";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<section class="p-4 p-md-5 mb-4 rounded-3 bg-dark text-white">
+    <div class="col-lg-9">
+        <span class="badge text-bg-warning mb-3">Portfolio Project</span>
+        <h1 class="display-5 fw-bold">PolicyClaimHub</h1>
+        <p class="lead">
+            ระบบหลังบ้านจำลองสำหรับจัดการกรมธรรม์ วิเคราะห์ลูกค้าและการต่ออายุ
+            ประเมินสินไหมน้ำท่วม และแสดงข้อมูลบนแผนที่ GIS
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Portfolio" asp-action="Index" class="btn btn-warning btn-lg">ดูการวิเคราะห์ลูกค้า</a>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-light btn-lg">เปิด GIS Dashboard</a>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm"><div class="card-body">
+            <h2 class="h4">กรมธรรม์และผลิตภัณฑ์</h2>
+            <p>CRUD พร้อม Validation ข้อมูลลูกค้า รถยนต์ เบี้ยประกัน และ Product Catalog</p>
+            <a asp-controller="Policies" asp-action="Index">เปิดรายการกรมธรรม์ →</a>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm"><div class="card-body">
+            <h2 class="h4">Renewal Analytics</h2>
+            <p>จัดกลุ่มความเสี่ยงจากประวัติเคลม ประเมินโอกาสต่ออายุ และแนะนำเบี้ย</p>
+            <a asp-controller="Portfolio" asp-action="Index">เปิดหน้าวิเคราะห์ →</a>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm"><div class="card-body">
+            <h2 class="h4">Flood Claim GIS</h2>
+            <p>จุดเกิดเหตุ พื้นที่น้ำท่วมจำลอง และสรุปภาระสินไหมแยกตามเขต</p>
+            <a asp-controller="Dashboard" asp-action="Index">เปิดแผนที่ →</a>
+        </div></div>
+    </div>
+</div>
+
+<div class="alert alert-secondary mt-4 mb-0">
+    ข้อมูลบุคคล รถยนต์ เหตุการณ์ และสูตรทั้งหมดเป็นข้อมูลจำลองเพื่อการศึกษา
 </div>

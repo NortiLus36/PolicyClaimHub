@@ -1,0 +1,40 @@
+@model IReadOnlyList<PolicyClaimHub.Models.MotorProduct>
+@using PolicyClaimHub.Models
+
+@{
+    ViewData["Title"] = "ผลิตภัณฑ์ประกันรถยนต์";
+}
+
+<div class="mb-4">
+    <h1>ผลิตภัณฑ์ประกันรถยนต์</h1>
+    <p class="text-muted mb-1">ข้อมูลอ้างอิงสำหรับทีมงานหลังบ้าน ไม่รวมโปรโมชั่น ราคา และสื่อโฆษณา</p>
+    <small>
+        ที่มา:
+        <a href="https://www.bangkokinsurance.com/th/product/motor1#type" target="_blank" rel="noopener noreferrer">เว็บไซต์กรุงเทพประกันภัย</a>
+        (ตรวจสอบวันที่ 5 ตุลาคม 2569)
+    </small>
+</div>
+
+@foreach (var group in Model.GroupBy(product => product.ProductClass))
+{
+    <section class="mb-4">
+        <h2 class="h4">@Html.DisplayFor(_ => group.Key)</h2>
+        <div class="row g-3">
+        @foreach (var product in group)
+        {
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between gap-2">
+                            <h3 class="h6 mb-2">@product.Name</h3>
+                            <span class="badge @(product.IsActive ? "text-bg-success" : "text-bg-secondary")">@(product.IsActive ? "ใช้งาน" : "ปิดใช้งาน")</span>
+                        </div>
+                        <div class="small text-muted mb-2">รหัส @product.Code</div>
+                        <p class="mb-0">@product.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+        </div>
+    </section>
+}

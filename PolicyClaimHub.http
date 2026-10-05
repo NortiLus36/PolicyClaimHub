@@ -1,0 +1,97 @@
+@PolicyClaimHub_HostAddress = https://localhost:7131
+
+### อ่านรายการกรมธรรม์ - ควรได้ 200 OK
+GET {{PolicyClaimHub_HostAddress}}/api/policies
+Accept: application/json
+
+### อ่านกรมธรรม์ที่ไม่มีอยู่ - ควรได้ 404 Not Found
+GET {{PolicyClaimHub_HostAddress}}/api/policies/99999
+Accept: application/json
+
+### เพิ่มกรมธรรม์ - ควรได้ 201 Created
+POST {{PolicyClaimHub_HostAddress}}/api/policies
+Content-Type: application/json
+
+{
+  "policyNumber": "POL-API-0001",
+  "insuredName": "ผู้ทดสอบ REST API",
+  "sumAssured": 750000,
+  "premiumAmount": 9500,
+  "coverageStartDate": "2026-10-05",
+  "coverageEndDate": "2027-10-05",
+  "status": "Active"
+}
+
+### ข้อมูลผิด - ควรได้ 400 Bad Request
+POST {{PolicyClaimHub_HostAddress}}/api/policies
+Content-Type: application/json
+
+{
+  "policyNumber": "",
+  "insuredName": "",
+  "sumAssured": 0,
+  "premiumAmount": 0,
+  "coverageStartDate": "2027-10-05",
+  "coverageEndDate": "2026-10-05",
+  "status": "Active"
+}
+
+### แก้ไขกรมธรรม์ - เปลี่ยน 1 เป็น Id ที่มีอยู่จริง
+PUT {{PolicyClaimHub_HostAddress}}/api/policies/1
+Content-Type: application/json
+
+{
+  "policyNumber": "POL-2026-0001",
+  "insuredName": "ผู้เอาประกันหลังแก้ไขผ่าน API",
+  "sumAssured": 1000000,
+  "premiumAmount": 12000,
+  "coverageStartDate": "2026-10-05",
+  "coverageEndDate": "2027-10-05",
+  "status": "Active"
+}
+
+### ลบกรมธรรม์ - เปลี่ยน 99999 เป็น Id ทดสอบ
+DELETE {{PolicyClaimHub_HostAddress}}/api/policies/99999
+
+### ประเมินสินไหมน้ำท่วม - เปลี่ยน policyId เป็น Id ที่ Active
+POST {{PolicyClaimHub_HostAddress}}/api/flood-claims/estimate
+Content-Type: application/json
+
+{
+  "policyId": 1,
+  "incidentDate": "2026-10-05",
+  "waterDepthCm": 65,
+  "requestedAmount": 700000,
+  "deductibleAmount": 10000,
+  "outstandingDebt": 25000
+}
+
+### บันทึกเคลมน้ำท่วม - ควรได้ 201 Created
+POST {{PolicyClaimHub_HostAddress}}/api/flood-claims
+Content-Type: application/json
+
+{
+  "claimNumber": "CLM-API-0001",
+  "vehicleRegistration": "ทดสอบ-1001",
+  "district": "บางเขน",
+  "latitude": 13.8739,
+  "longitude": 100.5964,
+  "policyId": 1,
+  "incidentDate": "2026-10-05",
+  "waterDepthCm": 65,
+  "requestedAmount": 700000,
+  "deductibleAmount": 10000,
+  "outstandingDebt": 25000
+}
+
+### สรุปสินไหมทุกเขต
+GET {{PolicyClaimHub_HostAddress}}/api/flood-claims/summary
+Accept: application/json
+
+### สรุปเฉพาะเขตบางเขน
+GET {{PolicyClaimHub_HostAddress}}/api/flood-claims/summary?district=บางเขน
+Accept: application/json
+
+### วิเคราะห์ลูกค้า ความเสี่ยง และโอกาสต่ออายุ
+GET {{PolicyClaimHub_HostAddress}}/api/portfolio/renewal-insights
+Accept: application/json

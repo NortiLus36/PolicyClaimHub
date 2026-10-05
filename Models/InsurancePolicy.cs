@@ -17,6 +17,15 @@ public enum PolicyStatus
     Cancelled = 4
 }
 
+public enum CustomerType
+{
+    [Display(Name = "ลูกค้าใหม่")]
+    New = 1,
+
+    [Display(Name = "ลูกค้าเดิม")]
+    Existing = 2
+}
+
 public class InsurancePolicy
 {
     public int Id { get; set; }
@@ -34,6 +43,37 @@ public class InsurancePolicy
         150,
         ErrorMessage = "ชื่อต้องมีความยาวไม่เกิน 150 ตัวอักษร")]
     public string InsuredName { get; set; } = "";
+
+    [Display(Name = "ประเภทลูกค้า")]
+    public CustomerType CustomerType { get; set; } = CustomerType.New;
+
+    [Display(Name = "เบอร์โทรศัพท์")]
+    [StringLength(20, ErrorMessage = "เบอร์โทรศัพท์ต้องไม่เกิน 20 ตัวอักษร")]
+    public string PhoneNumber { get; set; } = "";
+
+    [Display(Name = "ผลิตภัณฑ์ประกันรถยนต์")]
+    public int? MotorProductId { get; set; }
+
+    public MotorProduct? MotorProduct { get; set; }
+
+    [Display(Name = "ทะเบียนรถ")]
+    [Required(ErrorMessage = "กรุณาระบุทะเบียนรถ")]
+    [StringLength(20)]
+    public string VehicleRegistration { get; set; } = "";
+
+    [Display(Name = "ยี่ห้อรถ")]
+    [Required(ErrorMessage = "กรุณาระบุยี่ห้อรถ")]
+    [StringLength(50)]
+    public string VehicleMake { get; set; } = "";
+
+    [Display(Name = "รุ่นรถ")]
+    [Required(ErrorMessage = "กรุณาระบุรุ่นรถ")]
+    [StringLength(80)]
+    public string VehicleModel { get; set; } = "";
+
+    [Display(Name = "ปีรถ")]
+    [Range(1990, 2100, ErrorMessage = "ปีรถต้องอยู่ระหว่าง 1990 ถึง 2100")]
+    public int VehicleYear { get; set; } = DateTime.Today.Year;
 
     [Display(Name = "ทุนประกัน (บาท)")]
     [Range(
@@ -61,4 +101,7 @@ public class InsurancePolicy
 
     [Display(Name = "สถานะกรมธรรม์")]
     public PolicyStatus Status { get; set; } = PolicyStatus.Draft;
+
+    public ICollection<ClaimHistory> ClaimHistories { get; set; }
+        = new List<ClaimHistory>();
 }

@@ -1,10 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using PolicyClaimHub.Data;
+using PolicyClaimHub.Services.Claims;
+using PolicyClaimHub.Services.Renewals;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllersWithViews();
+builder.Services
+    .AddControllersWithViews()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()));
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
@@ -12,7 +20,23 @@ var connectionString =
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
+
+builder.Services.AddScoped<IClaimEstimationService, ClaimEstimationService>();
+builder.Services.AddScoped<IRenewalAssessmentService, RenewalAssessmentService>();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
+    var estimationService = scope.ServiceProvider
+        .GetRequiredService<IClaimEstimationService>();
+
+    await dbContext.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(dbContext, estimationService);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -28,6 +52,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

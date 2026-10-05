@@ -35,6 +35,7 @@ else
                 <tr>
                     <th>เลขกรมธรรม์</th>
                     <th>ชื่อผู้เอาประกัน</th>
+                    <th>ผลิตภัณฑ์ / รถ</th>
                     <th class="text-end">ทุนประกัน</th>
                     <th class="text-end">เบี้ยประกัน</th>
                     <th>ระยะเวลาคุ้มครอง</th>
@@ -49,6 +50,14 @@ else
                     <tr>
                         <td>@policy.PolicyNumber</td>
                         <td>@policy.InsuredName</td>
+
+                        <td>
+                            <div>@(policy.MotorProduct?.Name ?? "ไม่ระบุ")</div>
+                            <div class="small text-muted">
+                                @policy.VehicleRegistration · @policy.VehicleMake @policy.VehicleModel
+                                · เคลม @policy.ClaimHistories.Count ครั้ง
+                            </div>
+                        </td>
 
                         <td class="text-end">
                             @policy.SumAssured.ToString("N2")

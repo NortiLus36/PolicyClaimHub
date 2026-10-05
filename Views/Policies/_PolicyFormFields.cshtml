@@ -1,0 +1,81 @@
+@model PolicyClaimHub.Models.InsurancePolicy
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="PolicyNumber" class="form-label"></label>
+        <input asp-for="PolicyNumber" class="form-control" />
+        <span asp-validation-for="PolicyNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-5">
+        <label asp-for="InsuredName" class="form-label"></label>
+        <input asp-for="InsuredName" class="form-control" />
+        <span asp-validation-for="InsuredName" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="CustomerType" class="form-label"></label>
+        <select asp-for="CustomerType"
+                asp-items="Html.GetEnumSelectList<PolicyClaimHub.Models.CustomerType>()"
+                class="form-select"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="PhoneNumber" class="form-label"></label>
+        <input asp-for="PhoneNumber" class="form-control" placeholder="08x-xxx-xxxx" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="MotorProductId" class="form-label"></label>
+        <select asp-for="MotorProductId" asp-items="ViewBag.MotorProducts" class="form-select">
+            <option value="">-- เลือกผลิตภัณฑ์ --</option>
+        </select>
+    </div>
+
+    <div class="col-12"><hr class="my-1" /></div>
+
+    <div class="col-md-3">
+        <label asp-for="VehicleRegistration" class="form-label"></label>
+        <input asp-for="VehicleRegistration" class="form-control" />
+        <span asp-validation-for="VehicleRegistration" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="VehicleMake" class="form-label"></label>
+        <input asp-for="VehicleMake" class="form-control" />
+        <span asp-validation-for="VehicleMake" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="VehicleModel" class="form-label"></label>
+        <input asp-for="VehicleModel" class="form-control" />
+        <span asp-validation-for="VehicleModel" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="VehicleYear" class="form-label"></label>
+        <input asp-for="VehicleYear" class="form-control" type="number" min="1990" max="2100" />
+        <span asp-validation-for="VehicleYear" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="SumAssured" class="form-label"></label>
+        <input asp-for="SumAssured" class="form-control" type="number" min="1" step="0.01" />
+        <span asp-validation-for="SumAssured" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="PremiumAmount" class="form-label"></label>
+        <input asp-for="PremiumAmount" class="form-control" type="number" min="1" step="0.01" />
+        <span asp-validation-for="PremiumAmount" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="CoverageStartDate" class="form-label"></label>
+        <input asp-for="CoverageStartDate" class="form-control" type="date" />
+        <span asp-validation-for="CoverageStartDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="CoverageEndDate" class="form-label"></label>
+        <input asp-for="CoverageEndDate" class="form-control" type="date" />
+        <span asp-validation-for="CoverageEndDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status"
+                asp-items="Html.GetEnumSelectList<PolicyClaimHub.Models.PolicyStatus>()"
+                class="form-select"></select>
+    </div>
+</div>

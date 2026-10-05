@@ -484,3 +484,7 @@ $RECYCLE.BIN/
 *.db
 *.db-shm
 *.db-wal
+
+# Local CLI/test profiles
+.dotnet-home/
+.localappdata/

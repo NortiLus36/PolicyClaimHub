@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "Dashboard สินไหมน้ำท่วม";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+
+    <style>
+        #floodMap {
+            min-height: 480px;
+            border-radius: 0.5rem;
+        }
+    </style>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h1 class="mb-1">Dashboard สินไหมน้ำท่วม</h1>
+        <p class="text-muted mb-0">
+            ข้อมูลจำลองสำหรับ Portfolio ไม่ใช่ข้อมูลเหตุการณ์จริง
+        </p>
+    </div>
+
+    <button id="refreshDashboard" class="btn btn-outline-primary" type="button">
+        รีเฟรชข้อมูล
+    </button>
+</div>
+
+<div id="dashboardError" class="alert alert-danger d-none" role="alert"></div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">จำนวนเคลม</div>
+                <div id="claimCount" class="display-6 fw-semibold">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">ยอดเรียกร้องรวม</div>
+                <div id="totalRequested" class="fs-3 fw-semibold">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">สินไหมประมาณการรวม</div>
+                <div id="totalEstimated" class="fs-3 fw-semibold text-danger">-</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                แผนที่จุดเกิดเหตุและพื้นที่น้ำท่วมจำลอง
+            </div>
+            <div class="card-body p-2">
+                <div id="floodMap" aria-label="แผนที่สินไหมน้ำท่วม"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">
+                สรุปภาระสินไหมแยกตามเขต
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>เขต</th>
+                            <th class="text-end">เคลม</th>
+                            <th class="text-end">ประมาณการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="districtSummaryBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+        const currencyFormatter = new Intl.NumberFormat("th-TH", {
+            style: "currency",
+            currency: "THB",
+            maximumFractionDigits: 0
+        });
+
+        const map = L.map("floodMap").setView([13.87, 100.60], 12);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        const simulatedFloodArea = L.polygon([
+            [13.835, 100.555],
+            [13.925, 100.565],
+            [13.935, 100.640],
+            [13.845, 100.655]
+        ], {
+            color: "#0d6efd",
+            fillColor: "#0dcaf0",
+            fillOpacity: 0.18,
+            weight: 2
+        }).addTo(map);
+
+        simulatedFloodArea.bindPopup(
+            "พื้นที่น้ำท่วมจำลองสำหรับสาธิตการวิเคราะห์ GIS");
+
+        const markerLayer = L.layerGroup().addTo(map);
+
+        function markerColor(waterDepthCm) {
+            if (waterDepthCm >= 100) return "#dc3545";
+            if (waterDepthCm >= 50) return "#fd7e14";
+            return "#ffc107";
+        }
+
+        function addCell(row, value, className = "") {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            cell.className = className;
+            row.appendChild(cell);
+        }
+
+        async function loadDashboard() {
+            const errorBox = document.getElementById("dashboardError");
+            errorBox.classList.add("d-none");
+
+            try {
+                const [claimsResponse, summaryResponse] = await Promise.all([
+                    fetch("/api/flood-claims"),
+                    fetch("/api/flood-claims/summary")
+                ]);
+
+                if (!claimsResponse.ok || !summaryResponse.ok) {
+                    throw new Error("API ไม่สามารถส่งข้อมูล Dashboard ได้");
+                }
+
+                const claims = await claimsResponse.json();
+                const summary = await summaryResponse.json();
+
+                const totalRequested = summary.reduce(
+                    (total, item) => total + item.totalRequestedAmount, 0);
+                const totalEstimated = summary.reduce(
+                    (total, item) => total + item.totalEstimatedPayout, 0);
+
+                document.getElementById("claimCount").textContent = claims.length;
+                document.getElementById("totalRequested").textContent =
+                    currencyFormatter.format(totalRequested);
+                document.getElementById("totalEstimated").textContent =
+                    currencyFormatter.format(totalEstimated);
+
+                markerLayer.clearLayers();
+
+                for (const claim of claims) {
+                    const marker = L.circleMarker(
+                        [claim.latitude, claim.longitude],
+                        {
+                            radius: 9,
+                            color: markerColor(claim.waterDepthCm),
+                            fillOpacity: 0.8,
+                            weight: 2
+                        });
+
+                    const popup = document.createElement("div");
+                    const title = document.createElement("strong");
+                    title.textContent = claim.claimNumber;
+                    popup.appendChild(title);
+                    popup.appendChild(document.createElement("br"));
+                    popup.append(`เขต: ${claim.district}`);
+                    popup.appendChild(document.createElement("br"));
+                    popup.append(`ระดับน้ำ: ${claim.waterDepthCm} ซม.`);
+                    popup.appendChild(document.createElement("br"));
+                    popup.append(
+                        `ประมาณการ: ${currencyFormatter.format(claim.estimatedPayout)}`);
+
+                    marker.bindPopup(popup);
+                    markerLayer.addLayer(marker);
+                }
+
+                const tableBody = document.getElementById("districtSummaryBody");
+                tableBody.replaceChildren();
+
+                for (const item of summary) {
+                    const row = document.createElement("tr");
+                    addCell(row, item.district);
+                    addCell(row, item.claimCount, "text-end");
+                    addCell(
+                        row,
+                        currencyFormatter.format(item.totalEstimatedPayout),
+                        "text-end");
+                    tableBody.appendChild(row);
+                }
+            } catch (error) {
+                errorBox.textContent = error.message;
+                errorBox.classList.remove("d-none");
+            }
+        }
+
+        document
+            .getElementById("refreshDashboard")
+            .addEventListener("click", loadDashboard);
+
+        loadDashboard();
+    </script>
+}

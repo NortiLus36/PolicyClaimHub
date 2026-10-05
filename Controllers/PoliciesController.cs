@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using PolicyClaimHub.Data;
 using PolicyClaimHub.Models;
 
@@ -18,6 +19,8 @@ public class PoliciesController : Controller
     {
         var policies = await _context.InsurancePolicies
             .AsNoTracking()
+            .Include(policy => policy.MotorProduct)
+            .Include(policy => policy.ClaimHistories)
             .OrderBy(policy => policy.PolicyNumber)
             .ToListAsync();
 
@@ -34,6 +37,8 @@ public class PoliciesController : Controller
 
         var policy = await _context.InsurancePolicies
             .AsNoTracking()
+            .Include(item => item.MotorProduct)
+            .Include(item => item.ClaimHistories)
             .FirstOrDefaultAsync(item => item.Id == id.Value);
 
         if (policy is null)
@@ -45,8 +50,9 @@ public class PoliciesController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await PopulateProductsAsync();
         return View(new InsurancePolicy());
     }
 
@@ -54,7 +60,9 @@ public class PoliciesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
         [Bind(
-            "PolicyNumber,InsuredName,SumAssured,PremiumAmount," +
+            "PolicyNumber,InsuredName,CustomerType,PhoneNumber,MotorProductId," +
+            "VehicleRegistration,VehicleMake,VehicleModel,VehicleYear," +
+            "SumAssured,PremiumAmount," +
             "CoverageStartDate,CoverageEndDate,Status")]
         InsurancePolicy policy)
     {
@@ -63,6 +71,7 @@ public class PoliciesController : Controller
 
         if (!ModelState.IsValid)
         {
+            await PopulateProductsAsync(policy.MotorProductId);
             return View(policy);
         }
 
@@ -75,6 +84,7 @@ public class PoliciesController : Controller
                 nameof(policy.PolicyNumber),
                 "เลขกรมธรรม์นี้มีอยู่ในระบบแล้ว");
 
+            await PopulateProductsAsync(policy.MotorProductId);
             return View(policy);
         }
 
@@ -103,6 +113,8 @@ public class PoliciesController : Controller
             return NotFound();
         }
 
+        await PopulateProductsAsync(policy.MotorProductId);
+
         return View(policy);
     }
 
@@ -111,7 +123,9 @@ public class PoliciesController : Controller
     public async Task<IActionResult> Edit(
         int id,
         [Bind(
-            "Id,PolicyNumber,InsuredName,SumAssured,PremiumAmount," +
+            "Id,PolicyNumber,InsuredName,CustomerType,PhoneNumber,MotorProductId," +
+            "VehicleRegistration,VehicleMake,VehicleModel,VehicleYear," +
+            "SumAssured,PremiumAmount," +
             "CoverageStartDate,CoverageEndDate,Status")]
         InsurancePolicy policy)
     {
@@ -125,6 +139,7 @@ public class PoliciesController : Controller
 
         if (!ModelState.IsValid)
         {
+            await PopulateProductsAsync(policy.MotorProductId);
             return View(policy);
         }
 
@@ -139,6 +154,7 @@ public class PoliciesController : Controller
                 nameof(policy.PolicyNumber),
                 "เลขกรมธรรม์นี้มีอยู่ในระบบแล้ว");
 
+            await PopulateProductsAsync(policy.MotorProductId);
             return View(policy);
         }
 
@@ -219,10 +235,32 @@ public class PoliciesController : Controller
 
         policy.InsuredName =
             (policy.InsuredName ?? string.Empty).Trim();
+
+        policy.PhoneNumber = (policy.PhoneNumber ?? string.Empty).Trim();
+        policy.VehicleRegistration =
+            (policy.VehicleRegistration ?? string.Empty).Trim().ToUpperInvariant();
+        policy.VehicleMake = (policy.VehicleMake ?? string.Empty).Trim();
+        policy.VehicleModel = (policy.VehicleModel ?? string.Empty).Trim();
     }
 
     private Task<bool> PolicyExistsAsync(int id)
     {
         return _context.InsurancePolicies.AnyAsync(item => item.Id == id);
+    }
+
+    private async Task PopulateProductsAsync(int? selectedId = null)
+    {
+        var products = await _context.MotorProducts
+            .AsNoTracking()
+            .Where(product => product.IsActive)
+            .OrderBy(product => product.ProductClass)
+            .ThenBy(product => product.Name)
+            .ToListAsync();
+
+        ViewBag.MotorProducts = new SelectList(
+            products,
+            nameof(MotorProduct.Id),
+            nameof(MotorProduct.Name),
+            selectedId);
     }
 }

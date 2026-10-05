@@ -23,6 +23,19 @@
                 @Model.InsuredName
             </dd>
 
+            <dt class="col-sm-4">ประเภทลูกค้า / โทรศัพท์</dt>
+            <dd class="col-sm-8">
+                @Html.DisplayFor(model => model.CustomerType) · @Model.PhoneNumber
+            </dd>
+
+            <dt class="col-sm-4">ผลิตภัณฑ์</dt>
+            <dd class="col-sm-8">@(Model.MotorProduct?.Name ?? "ไม่ระบุ")</dd>
+
+            <dt class="col-sm-4">ข้อมูลรถ</dt>
+            <dd class="col-sm-8">
+                @Model.VehicleRegistration · @Model.VehicleMake @Model.VehicleModel (@Model.VehicleYear)
+            </dd>
+
             <dt class="col-sm-4">
                 @Html.DisplayNameFor(model => model.SumAssured)
             </dt>
@@ -58,6 +71,32 @@
                 @Html.DisplayFor(model => model.Status)
             </dd>
         </dl>
+
+        <hr />
+        <h2 class="h5">ประวัติเคลม (@Model.ClaimHistories.Count ครั้ง)</h2>
+        @if (Model.ClaimHistories.Count == 0)
+        {
+            <p class="text-success mb-0">ยังไม่มีประวัติเคลม</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>เลขเคลม</th><th>ประเภท</th><th>วันที่เกิดเหตุ</th><th class="text-end">ยอดจ่าย</th></tr></thead>
+                    <tbody>
+                    @foreach (var claim in Model.ClaimHistories.OrderByDescending(item => item.IncidentDate))
+                    {
+                        <tr>
+                            <td>@claim.ClaimNumber</td>
+                            <td>@Html.DisplayFor(_ => claim.ClaimType)</td>
+                            <td>@claim.IncidentDate.ToString("dd/MM/yyyy")</td>
+                            <td class="text-end">@claim.PaidAmount.ToString("N0")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 

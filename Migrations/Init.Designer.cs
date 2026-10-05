@@ -12,7 +12,7 @@ namespace PolicyClaimHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20261004173039_InitialCreate")]
-    partial class InitialCreate
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

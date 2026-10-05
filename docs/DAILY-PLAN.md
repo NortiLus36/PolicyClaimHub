@@ -16,6 +16,18 @@
 
 Payment Gateway ยังคงอยู่ในแผน แต่เป็น Stretch Goal หลังแกนหลักข้างต้นทำงานครบ
 
+## สถานะล่าสุด — 5 ตุลาคม 2026
+
+- เสร็จ: MVC CRUD, SQLite Migrations และ Validation
+- เสร็จ: REST API กรมธรรม์และสินไหมน้ำท่วม
+- เสร็จ: Claim Estimation Service และ Unit Tests
+- เสร็จ: GIS Dashboard และข้อมูลจุดเกิดเหตุจำลอง
+- เสร็จ: Product Catalog, ลูกค้าจำลอง 50 คน และประวัติเคลมหลายประเภท
+- เสร็จ: Risk Classification, Renewal Probability และเบี้ยแนะนำ
+- เตรียมแล้ว: Oracle DDL, Package, Function, Procedures และ Spatial Query
+- งานเร่งด่วนถัดไป: รัน Oracle scripts จริงใน SQL Developer และเก็บภาพหลักฐาน
+- Stretch Goal: Payment Gateway Test Mode
+
 ## หลักการทำงานร่วมกัน
 
 - ผู้เรียนพิมพ์โค้ดฟีเจอร์หลักเอง โดยทำทีละไฟล์และเข้าใจหน้าที่ก่อน
