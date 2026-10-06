@@ -7,10 +7,9 @@
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin="" />
-
     <style>
         #floodMap {
-            min-height: 480px;
+            min-height: 520px;
             border-radius: 0.5rem;
         }
     </style>
@@ -20,13 +19,25 @@
     <div>
         <h1 class="mb-1">Dashboard สินไหมน้ำท่วม</h1>
         <p class="text-muted mb-0">
-            ข้อมูลจำลองสำหรับ Portfolio ไม่ใช่ข้อมูลเหตุการณ์จริง
+            วิเคราะห์จุดสินไหมจำลองที่อยู่ภายใน Polygon คาดการณ์น้ำท่วมบริเวณเขตสาทร
         </p>
     </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span id="floodPolygonStatus" class="badge text-bg-secondary">
+            Polygon น้ำท่วม: กำลังตรวจสอบ
+        </span>
+        <button id="refreshDashboard" class="btn btn-outline-primary" type="button">
+            รีเฟรชข้อมูล
+        </button>
+    </div>
+</div>
 
-    <button id="refreshDashboard" class="btn btn-outline-primary" type="button">
-        รีเฟรชข้อมูล
-    </button>
+<div class="small text-muted mb-3">
+    Polygon จาก
+    <a href="https://gistdaportal.gistda.or.th/data/rest/services/GFlood/GFlood_Inno_WMS/MapServer/2"
+       target="_blank"
+       rel="noopener noreferrer">GISTDA GFlood</a>
+    เป็นผลวิเคราะห์/คาดการณ์ ไม่ใช่ขอบเขตที่ยืนยันจากการสำรวจภาคสนาม
 </div>
 
 <div id="dashboardError" class="alert alert-danger d-none" role="alert"></div>
@@ -35,12 +46,11 @@
     <div class="col-12 col-md-4">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
-                <div class="text-muted">จำนวนเคลม</div>
+                <div class="text-muted">จำนวนเคลมในพื้นที่</div>
                 <div id="claimCount" class="display-6 fw-semibold">-</div>
             </div>
         </div>
     </div>
-
     <div class="col-12 col-md-4">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
@@ -49,7 +59,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-12 col-md-4">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
@@ -64,19 +73,16 @@
     <div class="col-12 col-xl-8">
         <div class="card shadow-sm">
             <div class="card-header fw-semibold">
-                แผนที่จุดเกิดเหตุและพื้นที่น้ำท่วมจำลอง
+                Polygon น้ำท่วมและจุดสินไหมจำลอง — เขตสาทร
             </div>
             <div class="card-body p-2">
-                <div id="floodMap" aria-label="แผนที่สินไหมน้ำท่วม"></div>
+                <div id="floodMap" aria-label="แผนที่สินไหมน้ำท่วมเขตสาทร"></div>
             </div>
         </div>
     </div>
-
     <div class="col-12 col-xl-4">
         <div class="card shadow-sm h-100">
-            <div class="card-header fw-semibold">
-                สรุปภาระสินไหมแยกตามเขต
-            </div>
+            <div class="card-header fw-semibold">สรุปภาระสินไหมแยกตามเขต</div>
             <div class="table-responsive">
                 <table class="table table-sm table-striped mb-0">
                     <thead>
@@ -97,41 +103,49 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-
     <script>
         const currencyFormatter = new Intl.NumberFormat("th-TH", {
             style: "currency",
             currency: "THB",
             maximumFractionDigits: 0
         });
-
-        const map = L.map("floodMap").setView([13.87, 100.60], 12);
+        const sathornCenter = [13.720, 100.534];
+        const map = L.map("floodMap").setView(sathornCenter, 15);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
+        map.attributionControl.addAttribution(
+            '<a href="https://gistdaportal.gistda.or.th" target="_blank" rel="noopener noreferrer">GISTDA GFlood</a>');
 
-        const simulatedFloodArea = L.polygon([
-            [13.835, 100.555],
-            [13.925, 100.565],
-            [13.935, 100.640],
-            [13.845, 100.655]
-        ], {
-            color: "#0d6efd",
-            fillColor: "#0dcaf0",
-            fillOpacity: 0.18,
-            weight: 2
+        const floodPolygonLayer = L.geoJSON(null, {
+            style: {
+                color: "#0066cc",
+                weight: 2,
+                fillColor: "#0dcaf0",
+                fillOpacity: 0.42
+            },
+            onEachFeature: (feature, layer) => {
+                const properties = feature.properties ?? {};
+                const popup = document.createElement("div");
+                const title = document.createElement("strong");
+                title.textContent = "Polygon คาดการณ์น้ำท่วม";
+                popup.appendChild(title);
+                popup.appendChild(document.createElement("br"));
+                popup.append(`รหัสพื้นที่: ${properties.sid ?? "ไม่ระบุ"}`);
+                popup.appendChild(document.createElement("br"));
+                popup.append(`ชั้นการคาดการณ์: ${properties.classify ?? "ไม่ระบุ"}`);
+                popup.appendChild(document.createElement("br"));
+                popup.append("แหล่งข้อมูล: GISTDA GFlood");
+                layer.bindPopup(popup);
+            }
         }).addTo(map);
-
-        simulatedFloodArea.bindPopup(
-            "พื้นที่น้ำท่วมจำลองสำหรับสาธิตการวิเคราะห์ GIS");
-
-        const markerLayer = L.layerGroup().addTo(map);
+        const claimMarkerLayer = L.layerGroup().addTo(map);
 
         function markerColor(waterDepthCm) {
-            if (waterDepthCm >= 100) return "#dc3545";
-            if (waterDepthCm >= 50) return "#fd7e14";
+            if (waterDepthCm >= 60) return "#dc3545";
+            if (waterDepthCm >= 40) return "#fd7e14";
             return "#ffc107";
         }
 
@@ -140,6 +154,53 @@
             cell.textContent = value;
             cell.className = className;
             row.appendChild(cell);
+        }
+
+        function setPolygonStatus(message, cssClass) {
+            const status = document.getElementById("floodPolygonStatus");
+            status.textContent = message;
+            status.className = `badge ${cssClass}`;
+        }
+
+        async function loadFloodPolygon() {
+            setPolygonStatus("Polygon น้ำท่วม: กำลังโหลด", "text-bg-secondary");
+            const query = new URLSearchParams({
+                where: "FID=14",
+                outFields: "FID,sid,classify",
+                returnGeometry: "true",
+                outSR: "4326",
+                f: "geojson"
+            });
+            const url =
+                "https://gistdaportal.gistda.or.th/data/rest/services/GFlood/" +
+                `GFlood_Inno_WMS/MapServer/2/query?${query}`;
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                if (!response.ok) throw new Error(`GFlood API ตอบกลับ ${response.status}`);
+                const data = await response.json();
+                floodPolygonLayer.clearLayers();
+
+                if (!Array.isArray(data.features) || data.features.length === 0) {
+                    setPolygonStatus("Polygon น้ำท่วม: ไม่พบข้อมูล", "text-bg-info");
+                    return;
+                }
+
+                floodPolygonLayer.addData(data);
+                setPolygonStatus(
+                    `Polygon น้ำท่วม: ${data.features.length.toLocaleString("th-TH")} พื้นที่`,
+                    "text-bg-primary");
+            } catch (error) {
+                const message = error.name === "AbortError"
+                    ? "Polygon น้ำท่วม: หมดเวลาการเชื่อมต่อ"
+                    : "Polygon น้ำท่วม: เชื่อมต่อไม่ได้";
+                setPolygonStatus(message, "text-bg-warning");
+                console.error("โหลด Polygon น้ำท่วมไม่สำเร็จ", error);
+            } finally {
+                window.clearTimeout(timeoutId);
+            }
         }
 
         async function loadDashboard() {
@@ -151,37 +212,35 @@
                     fetch("/api/flood-claims"),
                     fetch("/api/flood-claims/summary")
                 ]);
-
                 if (!claimsResponse.ok || !summaryResponse.ok) {
                     throw new Error("API ไม่สามารถส่งข้อมูล Dashboard ได้");
                 }
 
                 const claims = await claimsResponse.json();
                 const summary = await summaryResponse.json();
-
-                const totalRequested = summary.reduce(
+                const sathornClaims = claims.filter(claim => claim.district === "สาทร");
+                const sathornSummary = summary.filter(item => item.district === "สาทร");
+                const totalRequested = sathornSummary.reduce(
                     (total, item) => total + item.totalRequestedAmount, 0);
-                const totalEstimated = summary.reduce(
+                const totalEstimated = sathornSummary.reduce(
                     (total, item) => total + item.totalEstimatedPayout, 0);
 
-                document.getElementById("claimCount").textContent = claims.length;
+                document.getElementById("claimCount").textContent = sathornClaims.length;
                 document.getElementById("totalRequested").textContent =
                     currencyFormatter.format(totalRequested);
                 document.getElementById("totalEstimated").textContent =
                     currencyFormatter.format(totalEstimated);
+                claimMarkerLayer.clearLayers();
 
-                markerLayer.clearLayers();
-
-                for (const claim of claims) {
-                    const marker = L.circleMarker(
-                        [claim.latitude, claim.longitude],
-                        {
-                            radius: 9,
-                            color: markerColor(claim.waterDepthCm),
-                            fillOpacity: 0.8,
-                            weight: 2
-                        });
-
+                for (const claim of sathornClaims) {
+                    const color = markerColor(claim.waterDepthCm);
+                    const marker = L.circleMarker([claim.latitude, claim.longitude], {
+                        radius: 9,
+                        color,
+                        fillColor: color,
+                        fillOpacity: 0.9,
+                        weight: 2
+                    });
                     const popup = document.createElement("div");
                     const title = document.createElement("strong");
                     title.textContent = claim.claimNumber;
@@ -191,24 +250,18 @@
                     popup.appendChild(document.createElement("br"));
                     popup.append(`ระดับน้ำ: ${claim.waterDepthCm} ซม.`);
                     popup.appendChild(document.createElement("br"));
-                    popup.append(
-                        `ประมาณการ: ${currencyFormatter.format(claim.estimatedPayout)}`);
-
+                    popup.append(`ประมาณการ: ${currencyFormatter.format(claim.estimatedPayout)}`);
                     marker.bindPopup(popup);
-                    markerLayer.addLayer(marker);
+                    claimMarkerLayer.addLayer(marker);
                 }
 
                 const tableBody = document.getElementById("districtSummaryBody");
                 tableBody.replaceChildren();
-
-                for (const item of summary) {
+                for (const item of sathornSummary) {
                     const row = document.createElement("tr");
                     addCell(row, item.district);
                     addCell(row, item.claimCount, "text-end");
-                    addCell(
-                        row,
-                        currencyFormatter.format(item.totalEstimatedPayout),
-                        "text-end");
+                    addCell(row, currencyFormatter.format(item.totalEstimatedPayout), "text-end");
                     tableBody.appendChild(row);
                 }
             } catch (error) {
@@ -217,10 +270,13 @@
             }
         }
 
-        document
-            .getElementById("refreshDashboard")
-            .addEventListener("click", loadDashboard);
+        document.getElementById("refreshDashboard").addEventListener("click", () => {
+            map.setView(sathornCenter, 15);
+            loadFloodPolygon();
+            loadDashboard();
+        });
 
+        loadFloodPolygon();
         loadDashboard();
     </script>
 }

@@ -17,7 +17,8 @@ Business Logic, GIS Dashboard และ Oracle PL/SQL ผ่านโจทย�
 - HTTP Status `200`, `201`, `204`, `400`, `404` และ `409`
 - Business Service ประเมินสินไหมตามสถานะกรมธรรม์ ช่วงคุ้มครอง และระดับน้ำ
 - Flood Claim API สำหรับประเมิน บันทึก และสรุปยอดตามเขต
-- Leaflet GIS Dashboard พร้อม Marker และ Flood Polygon จำลอง
+- Leaflet GIS Dashboard พร้อม Polygon คาดการณ์น้ำท่วมจาก GISTDA GFlood,
+  จุดน้ำท่วมถนนล่าสุดจาก NOW Bangkok และ Polygon จำลองสำรอง
 - Development Seed Data แบบเพิ่มครั้งเดียวและไม่สร้างซ้ำ
 - Oracle DDL, PL/SQL Package, Function, Procedures, Audit และ Spatial Query
 - Product Catalog ประกันรถยนต์ 17 แผน แยกประเภท 1, 2+, 3+, 3, อื่น ๆ และ พ.ร.บ.
@@ -106,6 +107,17 @@ dotnet test PolicyClaimHub.slnx --configuration Release
 [กรุงเทพประกันภัย](https://www.bangkokinsurance.com/th/product/motor1#type)
 ณ วันที่ 5 ตุลาคม 2569 โดยไม่คัดลอกโปรโมชั่น ราคา รูปภาพ โลโก้
 หรือข้อมูลลูกค้าจริง รายละเอียดในระบบเป็นข้อมูลจำลองเพื่อ Portfolio
+
+พื้นที่น้ำท่วมบน Dashboard เรียก GeoJSON จาก
+[GISTDA Flood Map Service](https://gistdaportal.gistda.or.th/arcgis/rest/services/app/GISTDA_flood/MapServer/0)
+โดยแยก Layer พื้นที่ประสบภัยปัจจุบันออกจากพื้นที่เสี่ยงภัยน้ำท่วมอย่างชัดเจน
+และแสดง Polygon ผลวิเคราะห์/คาดการณ์ที่ตัดกับกรุงเทพฯ จาก
+[GISTDA GFlood](https://gistdaportal.gistda.or.th/data/rest/services/GFlood/GFlood_Inno_WMS/MapServer/2)
+โดยระบุชัดว่าไม่ใช่ขอบเขตที่สำรวจยืนยันภาคสนาม
+ส่วนจุดน้ำท่วมถนนกรุงเทพฯ เรียกข้อมูลล่าสุดจาก
+[NOW Bangkok](https://now.bangkok.go.th/) ผ่าน API ตัวกลางของแอป
+หากบริการไม่มีข้อมูล ตอบกลับช้า หรือเชื่อมต่อไม่ได้ ระบบจะแจ้งสถานะและยังคง
+แสดง Polygon จำลองเพื่อให้ Demo ทำงานต่อได้
 
 ## Oracle / PL/SQL
 

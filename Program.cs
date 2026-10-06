@@ -23,6 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IClaimEstimationService, ClaimEstimationService>();
 builder.Services.AddScoped<IRenewalAssessmentService, RenewalAssessmentService>();
+builder.Services.AddHttpClient("NowBangkok", client =>
+{
+    client.BaseAddress = new Uri("https://now.bangkok.go.th/");
+    client.Timeout = TimeSpan.FromSeconds(12);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("PolicyClaimHub/1.0");
+});
 
 var app = builder.Build();
 

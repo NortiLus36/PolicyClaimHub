@@ -124,19 +124,36 @@ public static class DbSeeder
 
     private static async Task SeedFloodClaimsAsync(ApplicationDbContext context, IClaimEstimationService estimationService)
     {
-        if (await context.MotorFloodClaims.AnyAsync()) return;
+        var seeds = new[]
+        {
+            new FloodSeed("DEMO-SAT-001", "สาทร", 13.716, 100.531, 35, 420_000, 10_000, 15_000),
+            new FloodSeed("DEMO-SAT-002", "สาทร", 13.716, 100.533, 55, 680_000, 15_000, 0),
+            new FloodSeed("DEMO-SAT-003", "สาทร", 13.718, 100.531, 28, 350_000, 10_000, 8_000),
+            new FloodSeed("DEMO-SAT-004", "สาทร", 13.720, 100.533, 72, 790_000, 20_000, 25_000),
+            new FloodSeed("DEMO-SAT-005", "สาทร", 13.720, 100.535, 45, 510_000, 10_000, 12_000),
+            new FloodSeed("DEMO-SAT-006", "สาทร", 13.722, 100.535, 60, 640_000, 15_000, 18_000),
+            new FloodSeed("DEMO-SAT-007", "สาทร", 13.724, 100.537, 32, 390_000, 10_000, 5_000)
+        };
+
+        var existingDemoClaims = await context.MotorFloodClaims
+            .Where(claim =>
+                claim.ClaimNumber.StartsWith("DEMO-CLM-") ||
+                claim.ClaimNumber.StartsWith("DEMO-SAT-"))
+            .ToListAsync();
+
+        if (existingDemoClaims.Count == seeds.Length &&
+            existingDemoClaims.All(claim => claim.ClaimNumber.StartsWith("DEMO-SAT-")))
+        {
+            return;
+        }
+
+        context.MotorFloodClaims.RemoveRange(existingDemoClaims);
 
         var policies = await context.InsurancePolicies
             .Where(p => p.PolicyNumber.StartsWith(PortfolioPrefix) && p.Status == PolicyStatus.Active)
-            .Take(4)
+            .OrderBy(p => p.PolicyNumber)
+            .Take(seeds.Length)
             .ToListAsync();
-        var seeds = new[]
-        {
-            new FloodSeed("DEMO-CLM-001", "บางเขน", 13.8739, 100.5964, 65, 620_000, 10_000, 20_000),
-            new FloodSeed("DEMO-CLM-002", "ดอนเมือง", 13.9133, 100.6042, 110, 790_000, 15_000, 0),
-            new FloodSeed("DEMO-CLM-003", "หลักสี่", 13.8872, 100.5795, 42, 410_000, 10_000, 12_000),
-            new FloodSeed("DEMO-CLM-004", "บางเขน", 13.8516, 100.6250, 85, 550_000, 10_000, 5_000)
-        };
 
         for (var index = 0; index < Math.Min(seeds.Length, policies.Count); index++)
         {
