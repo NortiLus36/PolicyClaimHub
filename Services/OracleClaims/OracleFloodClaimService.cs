@@ -40,6 +40,8 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
     public async Task<OracleDatabaseStatus> GetStatusAsync(
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Oracle health check started");
+
         if (!IsConfigured)
         {
             return new OracleDatabaseStatus(
@@ -73,6 +75,10 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
                 await command.ExecuteScalarAsync(cancellationToken),
                 CultureInfo.InvariantCulture);
             var packageStatus = validObjectCount == 2 ? "VALID" : "INVALID";
+
+            _logger.LogInformation(
+                "Oracle health check completed. Package status: {PackageStatus}",
+                packageStatus);
 
             return new OracleDatabaseStatus(
                 true,
@@ -116,6 +122,13 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
         CancellationToken cancellationToken = default)
     {
         EnsureConfigured();
+
+        _logger.LogInformation(
+            "Calling {PackageName}.PR_GET_CLAIM_PAGE: page {PageNumber}, size {PageSize}, district {District}",
+            PackageName,
+            pageNumber,
+            pageSize,
+            string.IsNullOrWhiteSpace(district) ? "ALL" : district);
 
         try
         {
@@ -170,11 +183,18 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
                 }
             }
 
-            return new OracleClaimPage(
+            var result = new OracleClaimPage(
                 items,
                 pageNumber,
                 pageSize,
                 ToInt32(totalRowsParameter.Value));
+
+            _logger.LogInformation(
+                "PR_GET_CLAIM_PAGE completed. Returned {ItemCount} of {TotalRows} rows",
+                result.Items.Count,
+                result.TotalRows);
+
+            return result;
         }
         catch (OracleException exception)
         {
@@ -189,6 +209,12 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
         CancellationToken cancellationToken = default)
     {
         EnsureConfigured();
+
+        _logger.LogInformation(
+            "Calling {PackageName}.PR_SUBMIT_CLAIM for claim {ClaimNumber}, policy {PolicyNumber}",
+            PackageName,
+            request.ClaimNumber,
+            request.PolicyNumber);
 
         try
         {
@@ -213,9 +239,16 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
             await command.ExecuteNonQueryAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return new OracleSubmitClaimResult(
+            var result = new OracleSubmitClaimResult(
                 ToInt64(claimIdParameter.Value),
                 ToDecimal(estimatedPayoutParameter.Value));
+
+            _logger.LogInformation(
+                "PR_SUBMIT_CLAIM committed. Claim ID {ClaimId}, estimated payout {EstimatedPayout}",
+                result.ClaimId,
+                result.EstimatedPayout);
+
+            return result;
         }
         catch (OracleException exception)
         {
@@ -230,6 +263,12 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
         CancellationToken cancellationToken = default)
     {
         EnsureConfigured();
+
+        _logger.LogInformation(
+            "Calling {PackageName}.PR_APPROVE_CLAIM for claim ID {ClaimId}, amount {ApprovedAmount}",
+            PackageName,
+            request.ClaimId,
+            request.ApprovedAmount);
 
         try
         {
@@ -266,6 +305,10 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
 
             await command.ExecuteNonQueryAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "PR_APPROVE_CLAIM committed for claim ID {ClaimId}",
+                request.ClaimId);
         }
         catch (OracleException exception)
         {
