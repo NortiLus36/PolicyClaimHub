@@ -1,0 +1,105 @@
+@model PolicyClaimHub.ViewModels.PortfolioDashboardViewModel
+@using PolicyClaimHub.Services.Renewals
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="text-muted small">
+        พบ @Model.FilteredCustomers.ToString("N0") รายการ · หน้า @Model.PageNumber จาก @Model.TotalPages
+    </div>
+</div>
+
+@if (Model.Customers.Count == 0)
+{
+    <div class="alert alert-info">ไม่พบข้อมูลที่ตรงกับตัวกรอง</div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover table-sm align-middle mb-0 bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>ลูกค้า / กรมธรรม์</th>
+                    <th>ผลิตภัณฑ์ / รถ</th>
+                    <th class="text-end">เบี้ยปัจจุบัน</th>
+                    <th class="text-center">ประวัติเคลม</th>
+                    <th>ความเสี่ยง</th>
+                    <th class="text-center">โอกาสต่ออายุ</th>
+                    <th class="text-end">เบี้ยแนะนำ</th>
+                    <th>คำแนะนำ</th>
+                    <th class="text-center">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in Model.Customers)
+            {
+                var riskText = row.Assessment.RiskLevel switch
+                {
+                    CustomerRiskLevel.Low => "ต่ำ",
+                    CustomerRiskLevel.Standard => "มาตรฐาน",
+                    CustomerRiskLevel.Watchlist => "เฝ้าระวัง",
+                    _ => "สูง"
+                };
+                var riskClass = row.Assessment.RiskLevel switch
+                {
+                    CustomerRiskLevel.Low => "text-bg-success",
+                    CustomerRiskLevel.Standard => "text-bg-primary",
+                    CustomerRiskLevel.Watchlist => "text-bg-warning",
+                    _ => "text-bg-danger"
+                };
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@row.Policy.InsuredName</div>
+                        <div class="small text-muted">@row.Policy.PolicyNumber · @Html.DisplayFor(_ => row.Policy.CustomerType)</div>
+                    </td>
+                    <td>
+                        <div>@(row.Policy.MotorProduct?.Name ?? "ไม่ระบุผลิตภัณฑ์")</div>
+                        <div class="small text-muted">@row.Policy.VehicleRegistration · @row.Policy.VehicleMake @row.Policy.VehicleModel</div>
+                    </td>
+                    <td class="text-end">@row.Policy.PremiumAmount.ToString("N0")</td>
+                    <td class="text-center">
+                        <span class="badge text-bg-secondary">@row.Assessment.ClaimCount ครั้ง</span>
+                        <div class="small text-muted">@row.Assessment.TotalClaimAmount.ToString("N0") บาท</div>
+                    </td>
+                    <td><span class="badge @riskClass">@riskText</span></td>
+                    <td class="text-center fw-semibold">@row.Assessment.RenewalProbabilityPercent%</td>
+                    <td class="text-end fw-semibold">@row.Assessment.RecommendedPremium.ToString("N0")</td>
+                    <td class="small" style="min-width: 210px">@row.Assessment.Recommendation</td>
+                    <td class="text-center text-nowrap">
+                        <a asp-controller="Policies" asp-action="Details" asp-route-id="@row.Policy.Id"
+                           class="btn btn-sm btn-outline-info action-icon-button" title="รายละเอียด">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </a>
+                        <a asp-controller="Policies" asp-action="Edit" asp-route-id="@row.Policy.Id"
+                           class="btn btn-sm btn-outline-warning action-icon-button" title="แก้ไข">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="แบ่งหน้ารายการวิเคราะห์ลูกค้า">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : null)">
+                    <a class="page-link" href="#" data-portfolio-page="@(Model.PageNumber - 1)">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                </li>
+                @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                {
+                    <li class="page-item @(pageNumber == Model.PageNumber ? "active" : null)">
+                        <a class="page-link" href="#" data-portfolio-page="@pageNumber">@pageNumber</a>
+                    </li>
+                }
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : null)">
+                    <a class="page-link" href="#" data-portfolio-page="@(Model.PageNumber + 1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+}

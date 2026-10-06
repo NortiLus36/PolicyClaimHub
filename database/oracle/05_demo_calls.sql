@@ -1,5 +1,29 @@
 SET SERVEROUTPUT ON;
 
+-- Verify that both the public specification and implementation compiled.
+SELECT object_type, status
+FROM user_objects
+WHERE object_name = 'PKG_FLOOD_CLAIM'
+ORDER BY object_type;
+
+-- Boundary test for the current rate table.
+SELECT water_depth_cm,
+       pkg_flood_claim.fn_calculate_estimated_payout(
+           1000000,
+           water_depth_cm,
+           1000000,
+           0,
+           0
+       ) AS estimated_payout
+FROM (
+    SELECT 19 AS water_depth_cm FROM dual UNION ALL
+    SELECT 20 FROM dual UNION ALL
+    SELECT 40 FROM dual UNION ALL
+    SELECT 60 FROM dual UNION ALL
+    SELECT 100 FROM dual
+)
+ORDER BY water_depth_cm;
+
 -- Make the demo repeatable without affecting non-demo data.
 DELETE FROM claim_status_history
 WHERE claim_id IN (
@@ -31,9 +55,9 @@ BEGIN
         p_policy_number        => 'ORA-DEMO-001',
         p_vehicle_registration => 'TEST-1001',
         p_incident_date        => DATE '2026-10-05',
-        p_district             => 'บางเขน',
-        p_latitude             => 13.8739,
-        p_longitude            => 100.5964,
+        p_district             => 'สาทร',
+        p_latitude             => 13.720,
+        p_longitude            => 100.533,
         p_water_depth_cm       => 65,
         p_requested_amount     => 700000,
         p_deductible_amount    => 10000,
@@ -88,3 +112,35 @@ SELECT
     changed_at
 FROM claim_status_history
 ORDER BY history_id;
+
+-- Spatial proof: the simulated claim point is inside the Sathorn polygon.
+SELECT
+    claim.claim_number,
+    area.area_name,
+    SDO_RELATE(
+        claim.incident_location,
+        area.area_geometry,
+        'mask=INSIDE'
+    ) AS spatial_relation
+FROM motor_flood_claim claim
+CROSS JOIN flood_area area
+WHERE claim.claim_number = 'ORA-CLM-001'
+  AND area.area_name = 'พื้นที่น้ำท่วมจำลองเขตสาทร';
+
+-- Pagination demo compatible with Database Actions.
+DECLARE
+    v_total_rows NUMBER;
+    v_claim_page SYS_REFCURSOR;
+BEGIN
+    pkg_flood_claim.pr_get_claim_page(
+        p_page_number => 1,
+        p_page_size   => 10,
+        p_district    => 'สาทร',
+        p_total_rows  => v_total_rows,
+        p_result      => v_claim_page
+    );
+
+    DBMS_OUTPUT.PUT_LINE('Total rows: ' || v_total_rows);
+    DBMS_SQL.RETURN_RESULT(v_claim_page);
+END;
+/

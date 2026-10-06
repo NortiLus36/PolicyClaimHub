@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using PolicyClaimHub.Data;
 using PolicyClaimHub.Models;
+using PolicyClaimHub.ViewModels;
 
 namespace PolicyClaimHub.Controllers;
 
@@ -15,16 +16,30 @@ public class PoliciesController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
     {
-        var policies = await _context.InsurancePolicies
+        pageSize = pageSize is 10 or 20 or 50 ? pageSize : 10;
+        var query = _context.InsurancePolicies
             .AsNoTracking()
             .Include(policy => policy.MotorProduct)
-            .Include(policy => policy.ClaimHistories)
+            .Include(policy => policy.ClaimHistories);
+        var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Clamp(page, 1, totalPages);
+
+        var policies = await query
             .OrderBy(policy => policy.PolicyNumber)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return View(policies);
+        return View(new PagedResultViewModel<InsurancePolicy>
+        {
+            Items = policies,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        });
     }
 
     [HttpGet]

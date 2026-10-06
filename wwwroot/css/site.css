@@ -2,6 +2,18 @@ html {
   font-size: 14px;
 }
 
+:root {
+  --bs-font-sans-serif: "Kanit", sans-serif;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: "Kanit", sans-serif;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -18,7 +30,37 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  margin-bottom: 0;
+  background-color: #f6f8fb;
+}
+
+.card {
+  border: 0;
+}
+
+.filter-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f6ff 100%);
+  border: 1px solid #dce7f7;
+}
+
+.stat-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 0.75rem;
+}
+
+.action-icon-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-grid;
+  place-items: center;
+}
+
+.pagination .page-link {
+  min-width: 2.4rem;
+  text-align: center;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {

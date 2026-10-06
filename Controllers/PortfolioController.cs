@@ -21,7 +21,11 @@ public sealed class PortfolioController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? risk, string? search)
+    public async Task<IActionResult> Index(
+        string? risk,
+        string? search,
+        int page = 1,
+        int pageSize = 10)
     {
         var policies = await _context.InsurancePolicies
             .AsNoTracking()
@@ -56,6 +60,16 @@ public sealed class PortfolioController : Controller
 
         ViewBag.Search = search;
         ViewBag.Risk = risk;
+        pageSize = pageSize is 10 or 20 or 50 ? pageSize : 10;
+        var filteredCustomers = rows.Count;
+        var totalPages = Math.Max(
+            1,
+            (int)Math.Ceiling(filteredCustomers / (double)pageSize));
+        page = Math.Clamp(page, 1, totalPages);
+        rows = rows
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
         var allAssessments = policies.Select(_assessmentService.Assess).ToList();
         var model = new PortfolioDashboardViewModel
@@ -65,8 +79,16 @@ public sealed class PortfolioController : Controller
             RenewalCandidates = allAssessments.Count(item => item.RenewalProbabilityPercent >= 70),
             HighRiskCustomers = allAssessments.Count(item => item.RiskLevel == CustomerRiskLevel.High),
             TotalPremium = policies.Sum(policy => policy.PremiumAmount),
+            FilteredCustomers = filteredCustomers,
+            PageNumber = page,
+            PageSize = pageSize,
             Customers = rows
         };
+
+        if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+        {
+            return PartialView("_CustomerResults", model);
+        }
 
         return View(model);
     }

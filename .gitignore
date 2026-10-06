@@ -488,3 +488,12 @@ $RECYCLE.BIN/
 # Local CLI/test profiles
 .dotnet-home/
 .localappdata/
+
+# Oracle Autonomous Database wallet and local credentials
+Wallet_*/
+*.sso
+*.p12
+ewallet.pem
+tnsnames.ora
+sqlnet.ora
+ojdbc.properties

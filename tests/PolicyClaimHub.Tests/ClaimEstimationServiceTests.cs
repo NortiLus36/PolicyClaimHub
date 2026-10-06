@@ -76,9 +76,11 @@ public sealed class ClaimEstimationServiceTests
     }
 
     [Theory]
-    [InlineData(10, "ต่ำ", 0.15)]
-    [InlineData(30, "ปานกลาง", 0.35)]
-    [InlineData(65, "สูง", 0.60)]
+    [InlineData(10, "ยังไม่เข้าเกณฑ์", 0.00)]
+    [InlineData(20, "ต่ำ", 0.15)]
+    [InlineData(40, "ปานกลาง", 0.35)]
+    [InlineData(60, "สูง", 0.60)]
+    [InlineData(80, "สูง", 0.60)]
     [InlineData(120, "รุนแรง", 0.85)]
     public void Estimate_WaterDepth_SelectsExpectedRate(
         decimal waterDepthCm,

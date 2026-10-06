@@ -67,7 +67,7 @@ INSERT INTO flood_area (
     area_geometry
 )
 SELECT
-    'พื้นที่น้ำท่วมจำลองตอนเหนือของกรุงเทพฯ',
+    'พื้นที่น้ำท่วมจำลองเขตสาทร',
     'HIGH',
     SYSTIMESTAMP,
     MDSYS.SDO_GEOMETRY(
@@ -76,18 +76,18 @@ SELECT
         NULL,
         MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1),
         MDSYS.SDO_ORDINATE_ARRAY(
-            100.555, 13.835,
-            100.565, 13.925,
-            100.640, 13.935,
-            100.655, 13.845,
-            100.555, 13.835
+            100.529, 13.714,
+            100.539, 13.714,
+            100.539, 13.726,
+            100.529, 13.726,
+            100.529, 13.714
         )
     )
 FROM dual
 WHERE NOT EXISTS (
     SELECT 1
     FROM flood_area
-    WHERE area_name = 'พื้นที่น้ำท่วมจำลองตอนเหนือของกรุงเทพฯ'
+    WHERE area_name = 'พื้นที่น้ำท่วมจำลองเขตสาทร'
 );
 
 COMMIT;

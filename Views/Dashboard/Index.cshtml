@@ -12,6 +12,14 @@
             min-height: 520px;
             border-radius: 0.5rem;
         }
+
+        .claim-car-icon {
+            color: #dc3545;
+            font-size: 17px;
+            line-height: 20px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95);
+        }
     </style>
 }
 
@@ -73,7 +81,7 @@
     <div class="col-12 col-xl-8">
         <div class="card shadow-sm">
             <div class="card-header fw-semibold">
-                Polygon น้ำท่วมและจุดสินไหมจำลอง — เขตสาทร
+                แผนที่จำลองเหตุการณ์น้ำท่วมและจุดเคลมประกันภัยรถยนต์
             </div>
             <div class="card-body p-2">
                 <div id="floodMap" aria-label="แผนที่สินไหมน้ำท่วมเขตสาทร"></div>
@@ -119,7 +127,13 @@
         map.attributionControl.addAttribution(
             '<a href="https://gistdaportal.gistda.or.th" target="_blank" rel="noopener noreferrer">GISTDA GFlood</a>');
 
+        map.createPane("floodPolygonPane");
+        map.getPane("floodPolygonPane").style.zIndex = 400;
+        map.createPane("claimMarkerPane");
+        map.getPane("claimMarkerPane").style.zIndex = 650;
+
         const floodPolygonLayer = L.geoJSON(null, {
+            pane: "floodPolygonPane",
             style: {
                 color: "#0066cc",
                 weight: 2,
@@ -142,12 +156,13 @@
             }
         }).addTo(map);
         const claimMarkerLayer = L.layerGroup().addTo(map);
-
-        function markerColor(waterDepthCm) {
-            if (waterDepthCm >= 60) return "#dc3545";
-            if (waterDepthCm >= 40) return "#fd7e14";
-            return "#ffc107";
-        }
+        const carIcon = L.divIcon({
+            className: "claim-car-icon",
+            html: '<i class="fa-solid fa-car-side" aria-hidden="true"></i>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+            popupAnchor: [0, -10]
+        });
 
         function addCell(row, value, className = "") {
             const cell = document.createElement("td");
@@ -233,13 +248,10 @@
                 claimMarkerLayer.clearLayers();
 
                 for (const claim of sathornClaims) {
-                    const color = markerColor(claim.waterDepthCm);
-                    const marker = L.circleMarker([claim.latitude, claim.longitude], {
-                        radius: 9,
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.9,
-                        weight: 2
+                    const marker = L.marker([claim.latitude, claim.longitude], {
+                        icon: carIcon,
+                        pane: "claimMarkerPane",
+                        title: claim.claimNumber
                     });
                     const popup = document.createElement("div");
                     const title = document.createElement("strong");

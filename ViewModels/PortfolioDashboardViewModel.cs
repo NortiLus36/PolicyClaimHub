@@ -10,6 +10,12 @@ public sealed class PortfolioDashboardViewModel
     public int RenewalCandidates { get; init; }
     public int HighRiskCustomers { get; init; }
     public decimal TotalPremium { get; init; }
+    public int FilteredCustomers { get; init; }
+    public int PageNumber { get; init; }
+    public int PageSize { get; init; }
+    public int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCustomers / (double)PageSize));
+    public bool HasPreviousPage => PageNumber > 1;
+    public bool HasNextPage => PageNumber < TotalPages;
     public IReadOnlyList<PortfolioCustomerRowViewModel> Customers { get; init; }
         = [];
 }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PolicyClaimHub.Data;
 using PolicyClaimHub.Services.Claims;
+using PolicyClaimHub.Services.OracleClaims;
 using PolicyClaimHub.Services.Renewals;
 using System.Text.Json.Serialization;
 
@@ -23,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IClaimEstimationService, ClaimEstimationService>();
 builder.Services.AddScoped<IRenewalAssessmentService, RenewalAssessmentService>();
+builder.Services.AddScoped<IOracleFloodClaimService, OracleFloodClaimService>();
 builder.Services.AddHttpClient("NowBangkok", client =>
 {
     client.BaseAddress = new Uri("https://now.bangkok.go.th/");

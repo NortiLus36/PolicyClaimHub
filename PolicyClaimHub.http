@@ -95,3 +95,40 @@ Accept: application/json
 ### วิเคราะห์ลูกค้า ความเสี่ยง และโอกาสต่ออายุ
 GET {{PolicyClaimHub_HostAddress}}/api/portfolio/renewal-insights
 Accept: application/json
+
+### ตรวจการเชื่อม Oracle และสถานะ PKG_FLOOD_CLAIM
+GET {{PolicyClaimHub_HostAddress}}/api/oracle-flood-claims/health
+Accept: application/json
+
+### อ่านเคลมจาก Oracle ผ่าน PR_GET_CLAIM_PAGE
+GET {{PolicyClaimHub_HostAddress}}/api/oracle-flood-claims?pageNumber=1&pageSize=10&district=สาทร
+Accept: application/json
+
+### ยื่นเคลมผ่าน Oracle PR_SUBMIT_CLAIM - ควรได้ 201 Created
+POST {{PolicyClaimHub_HostAddress}}/api/oracle-flood-claims
+Content-Type: application/json
+
+{
+  "claimNumber": "ORA-WEB-0001",
+  "policyNumber": "ORA-DEMO-001",
+  "vehicleRegistration": "TEST-1001",
+  "incidentDate": "2026-10-05",
+  "district": "สาทร",
+  "latitude": 13.720,
+  "longitude": 100.533,
+  "waterDepthCm": 65,
+  "requestedAmount": 700000,
+  "deductibleAmount": 10000,
+  "outstandingDebt": 25000,
+  "changedBy": "PORTFOLIO_API"
+}
+
+### อนุมัติเคลมผ่าน Oracle PR_APPROVE_CLAIM - เปลี่ยน 1 เป็น Claim ID จริง
+PUT {{PolicyClaimHub_HostAddress}}/api/oracle-flood-claims/1/approve
+Content-Type: application/json
+
+{
+  "approvedAmount": 500000,
+  "changedBy": "PORTFOLIO_APPROVER",
+  "changeNote": "อนุมัติผ่าน REST API สำหรับการสาธิต"
+}

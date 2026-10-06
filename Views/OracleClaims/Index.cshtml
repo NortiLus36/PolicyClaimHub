@@ -1,0 +1,191 @@
+@model PolicyClaimHub.ViewModels.OracleClaimsIndexViewModel
+
+@{
+    ViewData["Title"] = "Oracle Claim Workflow";
+    var statusClass = Model.DatabaseStatus.CanConnect &&
+        Model.DatabaseStatus.PackageStatus == "VALID"
+            ? "success"
+            : "warning";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <span class="badge text-bg-dark mb-2">ORACLE PL/SQL</span>
+        <h1 class="h2 mb-1">Oracle Claim Workflow</h1>
+        <p class="text-secondary mb-0">
+            หน้านี้เรียก <code>PKG_FLOOD_CLAIM</code> โดยตรงผ่าน ODP.NET
+        </p>
+    </div>
+    @if (Model.DatabaseStatus.CanConnect && Model.DatabaseStatus.PackageStatus == "VALID")
+    {
+        <a class="btn btn-primary" asp-action="Create">
+            <i class="fa-solid fa-file-circle-plus me-1"></i>
+            ยื่นเคลมผ่าน Package
+        </a>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alert alert-@statusClass d-flex align-items-start gap-3" role="status">
+    <i class="fa-solid fa-database fs-4 mt-1"></i>
+    <div>
+        <strong>Database: @(Model.DatabaseStatus.CanConnect ? "Connected" : "Not connected")</strong>
+        <span class="mx-2">|</span>
+        <strong>Package: @Model.DatabaseStatus.PackageStatus</strong>
+        <div class="small mt-1">@Model.DatabaseStatus.Message</div>
+    </div>
+</div>
+
+@if (!Model.DatabaseStatus.CanConnect || Model.DatabaseStatus.PackageStatus != "VALID")
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="h5">สิ่งที่ต้องตั้งค่าก่อนใช้งาน</h2>
+            <ol class="mb-0">
+                <li>ดาวน์โหลดและแตก Oracle Wallet ไว้นอก Repository</li>
+                <li>เก็บ Connection String ใน .NET User Secrets</li>
+                <li>รัน <code>database/oracle/03_pkg_flood_claim.sql</code> ให้ Package เป็น VALID</li>
+            </ol>
+        </div>
+    </div>
+}
+else
+{
+    <form method="get" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="district" class="form-label">กรองตามเขต</label>
+                    <input id="district"
+                           name="district"
+                           value="@Model.District"
+                           class="form-control"
+                           placeholder="เช่น สาทร" />
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-dark" type="submit">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i>ค้นหา
+                    </button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">
+                        ล้าง
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>เลขเคลม</th>
+                        <th>กรมธรรม์</th>
+                        <th>เขต/ระดับน้ำ</th>
+                        <th class="text-end">ยอดเรียกร้อง</th>
+                        <th class="text-end">ยอดประเมิน</th>
+                        <th>สถานะ</th>
+                        <th class="text-end">ดำเนินการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Claims.Items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-secondary py-5">
+                                ยังไม่มีรายการเคลมใน Oracle
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var claim in Model.Claims.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@claim.ClaimNumber</strong>
+                                    <div class="small text-secondary">@claim.IncidentDate.ToString("dd/MM/yyyy")</div>
+                                </td>
+                                <td>
+                                    @claim.PolicyNumber
+                                    <div class="small text-secondary">@claim.VehicleRegistration</div>
+                                </td>
+                                <td>
+                                    @claim.District
+                                    <div class="small text-secondary">@claim.WaterDepthCm.ToString("N0") ซม.</div>
+                                </td>
+                                <td class="text-end">@claim.RequestedAmount.ToString("N2")</td>
+                                <td class="text-end fw-semibold">@claim.EstimatedPayout.ToString("N2")</td>
+                                <td><span class="badge text-bg-info">@claim.ClaimStatus</span></td>
+                                <td class="text-end" style="min-width: 260px;">
+                                    @if (claim.ClaimStatus is "SUBMITTED" or "UNDER_REVIEW")
+                                    {
+                                        <form asp-action="Approve" method="post" class="d-flex gap-2 justify-content-end">
+                                            <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                            <input type="number"
+                                                   name="approvedAmount"
+                                                   value="@claim.EstimatedPayout"
+                                                   min="0"
+                                                   max="@claim.EstimatedPayout"
+                                                   step="0.01"
+                                                   class="form-control form-control-sm"
+                                                   aria-label="ยอดอนุมัติ" />
+                                            <input type="hidden" name="changeNote" value="อนุมัติผ่าน Portfolio Web" />
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fa-solid fa-check me-1"></i>อนุมัติ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary small">ดำเนินการแล้ว</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-secondary small">
+            ทั้งหมด @Model.Claims.TotalRows.ToString("N0") รายการ
+        </span>
+        <nav aria-label="แบ่งหน้ารายการเคลม Oracle">
+            <ul class="pagination mb-0">
+                <li class="page-item @(Model.Claims.PageNumber <= 1 ? "disabled" : null)">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageNumber="@(Model.Claims.PageNumber - 1)"
+                       asp-route-district="@Model.District">ก่อนหน้า</a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">หน้า @Model.Claims.PageNumber / @Model.Claims.TotalPages</span>
+                </li>
+                <li class="page-item @(Model.Claims.PageNumber >= Model.Claims.TotalPages ? "disabled" : null)">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageNumber="@(Model.Claims.PageNumber + 1)"
+                       asp-route-district="@Model.District">ถัดไป</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+}

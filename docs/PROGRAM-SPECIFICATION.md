@@ -183,6 +183,15 @@ REST Endpoints ขั้นต่ำ:
 - `POST /api/flood-claims/estimate`
 - `GET /api/flood-claims/summary`
 
+Oracle Package Integration ที่เพิ่มแล้ว:
+
+- `GET /api/oracle-flood-claims` เรียก `PR_GET_CLAIM_PAGE`
+- `POST /api/oracle-flood-claims` เรียก `PR_SUBMIT_CLAIM`
+- `PUT /api/oracle-flood-claims/{id}/approve` เรียก `PR_APPROVE_CLAIM`
+- `GET /api/oracle-flood-claims/health` ตรวจ Connection และ Package Status
+
+ไม่มี Delete Claim เพราะต้องรักษา Audit Trail การยกเลิกใช้การเปลี่ยนสถานะแทน
+
 Status Code ที่ต้องรองรับ:
 
 - `200 OK`

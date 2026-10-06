@@ -17,6 +17,7 @@ dotnet run
 - `PolicyClaimHub.http`
 - `Services/Claims/ClaimEstimationService.cs`
 - `database/oracle/03_pkg_flood_claim.sql`
+- `/OracleClaims`
 - GitHub Commit History
 
 ## ลำดับ Demo 5 นาที
@@ -66,7 +67,7 @@ dotnet run
 - เลือก Damage Rate ตามระดับน้ำ
 - หัก Deductible และหนี้
 - จำกัดผลลัพธ์ไม่เกินทุนประกัน
-- Logic แยกจาก Controller และมี Unit Tests รวม 11 cases
+- Logic แยกจาก Controller และมี Unit Tests รวม 13 cases
 
 ### 6. GIS Dashboard (60 วินาที)
 
@@ -82,7 +83,7 @@ dotnet run
 - ยอดเรียกร้องและยอดประมาณการรวม
 - Summary แยกตามเขตจาก API
 
-### 7. Oracle PL/SQL (60 วินาที)
+### ⭐ 7. Oracle PL/SQL — Interview Highlight (ต้องนำเสนอ)
 
 เปิด `PKG_FLOOD_CLAIM` ใน SQL Developer แล้วอธิบาย:
 
@@ -92,6 +93,12 @@ dotnet run
 - `RAISE_APPLICATION_ERROR` สำหรับ Business Error
 - Audit History และ Caller เป็นผู้ควบคุม `COMMIT/ROLLBACK`
 - `SDO_RELATE` ตรวจ Point อยู่ภายใน Flood Polygon
+- หน้า MVC และ REST API เรียก Package ผ่าน ODP.NET จริง
+- `BindByName` และ Parameter ป้องกัน SQL Injection
+
+> หัวข้อนี้เป็นจุดเด่นหลักของ Portfolio: ต้องเตรียมเปิด Package,
+> รัน Demo Call และอธิบายว่าเหตุใดจึงแยก Function/Procedure ออกจาก Controller
+> โดยจะเตรียมสคริปต์พูดแบบ 60–90 วินาทีหลัง Oracle Demo ทดสอบผ่านครบ
 
 ## คำตอบสั้นที่ควรเตรียม
 

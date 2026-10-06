@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PolicyClaimHub.Models.InsurancePolicy>
+@model PolicyClaimHub.ViewModels.PagedResultViewModel<PolicyClaimHub.Models.InsurancePolicy>
 
 @{
     ViewData["Title"] = "รายการกรมธรรม์";
@@ -6,31 +6,40 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>รายการกรมธรรม์</h1>
-
     <a asp-action="Create" class="btn btn-primary">
-        เพิ่มกรมธรรม์
+        <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>เพิ่มกรมธรรม์
     </a>
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)
 {
-    <div class="alert alert-success">
-        @successMessage
-    </div>
+    <div class="alert alert-success">@successMessage</div>
 }
 
-@if (!Model.Any())
+@if (Model.TotalItems == 0)
 {
-    <div class="alert alert-info">
-        ยังไม่มีข้อมูลกรมธรรม์ในระบบ
-    </div>
+    <div class="alert alert-info">ยังไม่มีข้อมูลกรมธรรม์ในระบบ</div>
 }
 else
 {
-    <p>พบข้อมูลกรมธรรม์ทั้งหมด @Model.Count() รายการ</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <p class="text-muted mb-0">
+            พบข้อมูลทั้งหมด @Model.TotalItems.ToString("N0") รายการ
+            · หน้า @Model.PageNumber จาก @Model.TotalPages
+        </p>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="pageSize" class="small text-muted text-nowrap">แสดงต่อหน้า</label>
+            <select id="pageSize" name="pageSize" class="form-select form-select-sm"
+                    onchange="this.form.submit()">
+                <option value="10" selected="@(Model.PageSize == 10)">10</option>
+                <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                <option value="50" selected="@(Model.PageSize == 50)">50</option>
+            </select>
+        </form>
+    </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered align-middle">
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle mb-0 bg-white">
             <thead class="table-dark">
                 <tr>
                     <th>เลขกรมธรรม์</th>
@@ -43,14 +52,12 @@ else
                     <th class="text-center">จัดการ</th>
                 </tr>
             </thead>
-
             <tbody>
-                @foreach (var policy in Model)
+                @foreach (var policy in Model.Items)
                 {
                     <tr>
-                        <td>@policy.PolicyNumber</td>
+                        <td class="fw-medium">@policy.PolicyNumber</td>
                         <td>@policy.InsuredName</td>
-
                         <td>
                             <div>@(policy.MotorProduct?.Name ?? "ไม่ระบุ")</div>
                             <div class="small text-muted">
@@ -58,43 +65,29 @@ else
                                 · เคลม @policy.ClaimHistories.Count ครั้ง
                             </div>
                         </td>
-
-                        <td class="text-end">
-                            @policy.SumAssured.ToString("N2")
-                        </td>
-
-                        <td class="text-end">
-                            @policy.PremiumAmount.ToString("N2")
-                        </td>
-
+                        <td class="text-end">@policy.SumAssured.ToString("N2")</td>
+                        <td class="text-end">@policy.PremiumAmount.ToString("N2")</td>
                         <td>
                             @policy.CoverageStartDate.ToString("dd/MM/yyyy")
-                            -
-                            @policy.CoverageEndDate.ToString("dd/MM/yyyy")
+                            - @policy.CoverageEndDate.ToString("dd/MM/yyyy")
                         </td>
-
-                        <td>
-                            @Html.DisplayFor(modelItem => policy.Status)
-                        </td>
-
+                        <td>@Html.DisplayFor(modelItem => policy.Status)</td>
                         <td class="text-center text-nowrap">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a asp-action="Details"
-                                   asp-route-id="@policy.Id"
-                                   class="btn btn-outline-info">
-                                    รายละเอียด
+                            <div class="d-inline-flex gap-1" role="group" aria-label="จัดการกรมธรรม์">
+                                <a asp-action="Details" asp-route-id="@policy.Id"
+                                   class="btn btn-sm btn-outline-info action-icon-button"
+                                   title="รายละเอียด" aria-label="ดูรายละเอียด @policy.PolicyNumber">
+                                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                 </a>
-
-                                <a asp-action="Edit"
-                                   asp-route-id="@policy.Id"
-                                   class="btn btn-outline-warning">
-                                    แก้ไข
+                                <a asp-action="Edit" asp-route-id="@policy.Id"
+                                   class="btn btn-sm btn-outline-warning action-icon-button"
+                                   title="แก้ไข" aria-label="แก้ไข @policy.PolicyNumber">
+                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                 </a>
-
-                                <a asp-action="Delete"
-                                   asp-route-id="@policy.Id"
-                                   class="btn btn-outline-danger">
-                                    ลบ
+                                <a asp-action="Delete" asp-route-id="@policy.Id"
+                                   class="btn btn-sm btn-outline-danger action-icon-button"
+                                   title="ลบ" aria-label="ลบ @policy.PolicyNumber">
+                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                 </a>
                             </div>
                         </td>
@@ -103,4 +96,31 @@ else
             </tbody>
         </table>
     </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="แบ่งหน้ารายการกรมธรรม์">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : null)">
+                    <a class="page-link" asp-route-page="@(Model.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize" aria-label="หน้าก่อนหน้า">
+                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                    </a>
+                </li>
+                @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                {
+                    <li class="page-item @(pageNumber == Model.PageNumber ? "active" : null)">
+                        <a class="page-link" asp-route-page="@pageNumber"
+                           asp-route-pageSize="@Model.PageSize">@pageNumber</a>
+                    </li>
+                }
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : null)">
+                    <a class="page-link" asp-route-page="@(Model.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize" aria-label="หน้าถัดไป">
+                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
 }

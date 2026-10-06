@@ -1,6 +1,5 @@
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
 
 <!DOCTYPE html>
@@ -10,6 +9,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - PolicyClaimHub</title>
     <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+          integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PolicyClaimHub.styles.css" asp-append-version="true" />
@@ -51,7 +59,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Policies" && currentAction != "Create" ? "active" : null)"
+                            <a class="nav-link @(currentController == "Policies" ? "active" : null)"
                                asp-area=""
                                asp-controller="Policies"
                                asp-action="Index">
@@ -84,14 +92,14 @@
                             </a>
                         </li>
 
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-warning @(currentController == "Policies" && currentAction == "Create" ? "active" : null)"
-                               asp-area=""
-                               asp-controller="Policies"
-                               asp-action="Create">
-                                + เพิ่มกรมธรรม์
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "OracleClaims" ? "active" : null)"
+                               asp-controller="OracleClaims"
+                               asp-action="Index">
+                                Oracle Claims
                             </a>
                         </li>
+
                     </ul>
                 </div>
             </div>
@@ -103,12 +111,6 @@
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 PolicyClaimHub &mdash; Portfolio Project
-        </div>
-    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

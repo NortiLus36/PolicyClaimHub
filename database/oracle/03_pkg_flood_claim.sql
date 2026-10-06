@@ -30,6 +30,14 @@ CREATE OR REPLACE PACKAGE pkg_flood_claim AS
         p_changed_by     IN VARCHAR2,
         p_change_note    IN VARCHAR2 DEFAULT NULL
     );
+
+    PROCEDURE pr_get_claim_page (
+        p_page_number IN PLS_INTEGER,
+        p_page_size   IN PLS_INTEGER,
+        p_district    IN VARCHAR2,
+        p_total_rows  OUT NUMBER,
+        p_result      OUT SYS_REFCURSOR
+    );
 END pkg_flood_claim;
 /
 
@@ -42,8 +50,11 @@ CREATE OR REPLACE PACKAGE BODY pkg_flood_claim AS
         p_outstanding_debt  IN NUMBER
     ) RETURN NUMBER DETERMINISTIC
     IS
+        -- Percentage of the sum assured used as the payout ceiling.
         v_damage_rate NUMBER(5, 4);
+        -- Estimated loss before deductible and outstanding debt are deducted.
         v_gross_loss  NUMBER(18, 2);
+        -- Final estimated payout after all deductions.
         v_net_payout  NUMBER(18, 2);
     BEGIN
         IF p_sum_assured <= 0 OR p_requested_amount <= 0 THEN
@@ -61,8 +72,9 @@ CREATE OR REPLACE PACKAGE BODY pkg_flood_claim AS
         END IF;
 
         v_damage_rate := CASE
-            WHEN p_water_depth_cm < 20 THEN 0.15
-            WHEN p_water_depth_cm < 50 THEN 0.35
+            WHEN p_water_depth_cm < 20 THEN 0.00
+            WHEN p_water_depth_cm < 40 THEN 0.15
+            WHEN p_water_depth_cm < 60 THEN 0.35
             WHEN p_water_depth_cm < 100 THEN 0.60
             ELSE 0.85
         END;
@@ -99,10 +111,15 @@ CREATE OR REPLACE PACKAGE BODY pkg_flood_claim AS
         p_estimated_payout     OUT NUMBER
     )
     IS
+        -- Primary key of the policy found from p_policy_number.
         v_policy_id           insurance_policy.policy_id%TYPE;
+        -- Sum assured used as the base of the payout calculation.
         v_sum_assured         insurance_policy.sum_assured%TYPE;
+        -- Current policy status; only ACTIVE policies can submit a claim.
         v_policy_status       insurance_policy.policy_status%TYPE;
+        -- First date on which the policy provides coverage.
         v_coverage_start_date insurance_policy.coverage_start_date%TYPE;
+        -- Last date on which the policy provides coverage.
         v_coverage_end_date   insurance_policy.coverage_end_date%TYPE;
     BEGIN
         SELECT
@@ -208,7 +225,9 @@ CREATE OR REPLACE PACKAGE BODY pkg_flood_claim AS
         p_change_note     IN VARCHAR2 DEFAULT NULL
     )
     IS
+        -- Claim status before approval, retained for validation and audit.
         v_previous_status  motor_flood_claim.claim_status%TYPE;
+        -- Maximum amount calculated by the estimation function.
         v_estimated_payout motor_flood_claim.estimated_payout%TYPE;
     BEGIN
         SELECT claim_status, estimated_payout
@@ -257,6 +276,55 @@ CREATE OR REPLACE PACKAGE BODY pkg_flood_claim AS
         WHEN NO_DATA_FOUND THEN
             RAISE_APPLICATION_ERROR(-20007, 'Claim was not found.');
     END pr_approve_claim;
+
+    PROCEDURE pr_get_claim_page (
+        p_page_number IN PLS_INTEGER,
+        p_page_size   IN PLS_INTEGER,
+        p_district    IN VARCHAR2,
+        p_total_rows  OUT NUMBER,
+        p_result      OUT SYS_REFCURSOR
+    )
+    IS
+        -- Number of rows to skip before reading the requested page.
+        v_offset PLS_INTEGER;
+    BEGIN
+        IF p_page_number < 1 THEN
+            RAISE_APPLICATION_ERROR(-20020, 'Page number must be at least 1.');
+        END IF;
+
+        IF p_page_size < 1 OR p_page_size > 100 THEN
+            RAISE_APPLICATION_ERROR(-20021, 'Page size must be between 1 and 100.');
+        END IF;
+
+        v_offset := (p_page_number - 1) * p_page_size;
+
+        SELECT COUNT(*)
+        INTO p_total_rows
+        FROM motor_flood_claim claim
+        WHERE p_district IS NULL
+           OR claim.district = TRIM(p_district);
+
+        OPEN p_result FOR
+            SELECT
+                claim.claim_id,
+                claim.claim_number,
+                policy.policy_number,
+                claim.vehicle_registration,
+                claim.incident_date,
+                claim.district,
+                claim.water_depth_cm,
+                claim.requested_amount,
+                claim.estimated_payout,
+                claim.claim_status
+            FROM motor_flood_claim claim
+            JOIN insurance_policy policy
+                ON policy.policy_id = claim.policy_id
+            WHERE p_district IS NULL
+               OR claim.district = TRIM(p_district)
+            ORDER BY claim.incident_date DESC, claim.claim_id DESC
+            OFFSET v_offset ROWS
+            FETCH NEXT p_page_size ROWS ONLY;
+    END pr_get_claim_page;
 END pkg_flood_claim;
 /
 

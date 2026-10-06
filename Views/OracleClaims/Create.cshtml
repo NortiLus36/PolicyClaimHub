@@ -1,0 +1,99 @@
+@model PolicyClaimHub.Dtos.OracleClaims.OracleSubmitClaimRequestDto
+
+@{
+    ViewData["Title"] = "ยื่นเคลมผ่าน Oracle Package";
+}
+
+<div class="row justify-content-center">
+    <div class="col-xl-9">
+        <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+            <div>
+                <span class="badge text-bg-dark mb-2">PR_SUBMIT_CLAIM</span>
+                <h1 class="h2 mb-1">ยื่นเคลมน้ำท่วมผ่าน Oracle</h1>
+                <p class="text-secondary mb-0">
+                    Package จะตรวจกรมธรรม์ ช่วงคุ้มครอง คำนวณยอด และบันทึก Audit ใน Transaction เดียว
+                </p>
+            </div>
+            <a class="btn btn-outline-secondary" asp-action="Index">กลับรายการ</a>
+        </div>
+
+        <form asp-action="Create" method="post" class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="ClaimNumber" class="form-label">เลขที่เคลม</label>
+                        <input asp-for="ClaimNumber" class="form-control" placeholder="ORA-CLM-001" />
+                        <span asp-validation-for="ClaimNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PolicyNumber" class="form-label">เลขกรมธรรม์</label>
+                        <input asp-for="PolicyNumber" class="form-control" />
+                        <span asp-validation-for="PolicyNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="VehicleRegistration" class="form-label">ทะเบียนรถ</label>
+                        <input asp-for="VehicleRegistration" class="form-control" placeholder="TEST-1001" />
+                        <span asp-validation-for="VehicleRegistration" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="IncidentDate" class="form-label">วันที่เกิดเหตุ</label>
+                        <input asp-for="IncidentDate" class="form-control" />
+                        <span asp-validation-for="IncidentDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="District" class="form-label">เขต</label>
+                        <input asp-for="District" class="form-control" />
+                        <span asp-validation-for="District" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Latitude" class="form-label">Latitude</label>
+                        <input asp-for="Latitude" class="form-control" step="0.000001" />
+                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Longitude" class="form-label">Longitude</label>
+                        <input asp-for="Longitude" class="form-control" step="0.000001" />
+                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="WaterDepthCm" class="form-label">ระดับน้ำ (ซม.)</label>
+                        <input asp-for="WaterDepthCm" class="form-control" step="0.01" />
+                        <span asp-validation-for="WaterDepthCm" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="RequestedAmount" class="form-label">ยอดเรียกร้อง</label>
+                        <input asp-for="RequestedAmount" class="form-control" step="0.01" />
+                        <span asp-validation-for="RequestedAmount" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="DeductibleAmount" class="form-label">ค่าเสียหายส่วนแรก</label>
+                        <input asp-for="DeductibleAmount" class="form-control" step="0.01" />
+                        <span asp-validation-for="DeductibleAmount" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="OutstandingDebt" class="form-label">ยอดหนี้คงเหลือ</label>
+                        <input asp-for="OutstandingDebt" class="form-control" step="0.01" />
+                        <span asp-validation-for="OutstandingDebt" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ChangedBy" class="form-label">ผู้ทำรายการ</label>
+                        <input asp-for="ChangedBy" class="form-control" />
+                        <span asp-validation-for="ChangedBy" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 px-4 pb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-up me-1"></i>
+                    ส่งเข้า PKG_FLOOD_CLAIM
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

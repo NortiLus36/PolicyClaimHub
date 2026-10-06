@@ -53,8 +53,9 @@ public sealed class ClaimEstimationService : IClaimEstimationService
     {
         return waterDepthCm switch
         {
-            < 20 => ("ต่ำ", 0.15m),
-            < 50 => ("ปานกลาง", 0.35m),
+            < 20 => ("ยังไม่เข้าเกณฑ์", 0.00m),
+            < 40 => ("ต่ำ", 0.15m),
+            < 60 => ("ปานกลาง", 0.35m),
             < 100 => ("สูง", 0.60m),
             _ => ("รุนแรง", 0.85m)
         };
