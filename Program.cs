@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Oracle.ManagedDataAccess.Client;
 using PolicyClaimHub.Data;
 using PolicyClaimHub.Services.Claims;
 using PolicyClaimHub.Services.OracleClaims;
@@ -21,6 +22,20 @@ var connectionString =
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
+
+var oracleConnectionString =
+    builder.Configuration.GetConnectionString("OracleConnection");
+if (!string.IsNullOrWhiteSpace(oracleConnectionString))
+{
+    var oracleConnectionBuilder =
+        new OracleConnectionStringBuilder(oracleConnectionString);
+    if (!string.IsNullOrWhiteSpace(oracleConnectionBuilder.TnsAdmin))
+    {
+        // ODP.NET must know where the TNS configuration files are before
+        // the first Oracle connection opens.
+        OracleConfiguration.TnsAdmin = oracleConnectionBuilder.TnsAdmin;
+    }
+}
 
 builder.Services.AddScoped<IClaimEstimationService, ClaimEstimationService>();
 builder.Services.AddScoped<IRenewalAssessmentService, RenewalAssessmentService>();

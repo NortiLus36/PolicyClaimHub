@@ -15,8 +15,23 @@ public sealed class OracleFloodClaimService : IOracleFloodClaimService
         IConfiguration configuration,
         ILogger<OracleFloodClaimService> logger)
     {
-        _connectionString = configuration
+        var configuredConnectionString = configuration
             .GetConnectionString("OracleConnection");
+        if (!string.IsNullOrWhiteSpace(configuredConnectionString))
+        {
+            var connectionBuilder =
+                new OracleConnectionStringBuilder(configuredConnectionString);
+            connectionBuilder.ConnectionTimeout = 120;
+            connectionBuilder.WalletLocation = connectionBuilder.TnsAdmin;
+            var serviceName = configuration["Oracle:ServiceName"];
+            if (!string.IsNullOrWhiteSpace(serviceName))
+            {
+                connectionBuilder.DataSource = serviceName;
+            }
+
+            _connectionString = connectionBuilder.ConnectionString;
+        }
+
         _logger = logger;
     }
 
