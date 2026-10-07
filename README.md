@@ -139,8 +139,8 @@ dotnet test PolicyClaimHub.slnx --configuration Release
 รายละเอียด Business Rules และวิธีตรวจ Compilation Error อยู่ใน
 `database/oracle/README.md`
 
-วิธีเชื่อม ASP.NET กับ Oracle Wallet และ User Secrets อยู่ใน
-`docs/ORACLE-CONNECTION.md`
+ตั้งค่า Oracle Wallet และ User Secrets ด้วย
+`scripts/configure-oracle-secret.ps1`
 
 Oracle scripts เตรียมไว้สำหรับ Oracle Autonomous Database และต้องรันยืนยัน
 กับ Oracle instance ก่อนใช้ในการสาธิตจริง
@@ -160,13 +160,6 @@ Views/Portfolio        Back-office customer analytics
 Migrations             SQLite schema history
 database/oracle        Oracle SQL และ PL/SQL
 ```
-
-## เอกสารโครงการ
-
-- [แผนพัฒนารายวัน](docs/DAILY-PLAN.md)
-- [Program Specification](docs/PROGRAM-SPECIFICATION.md)
-- [Oracle Connection](docs/ORACLE-CONNECTION.md)
-- [สคริปต์พรีเซนต์](docs/INTERVIEW-SCRIPT.md)
 
 ## สิ่งที่ยังอยู่ใน Roadmap
 

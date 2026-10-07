@@ -489,6 +489,9 @@ $RECYCLE.BIN/
 .dotnet-home/
 .localappdata/
 
+# Local project notes, interview scripts, and planning documents
+/docs/
+
 # Oracle Autonomous Database wallet and local credentials
 Wallet_*/
 *.sso

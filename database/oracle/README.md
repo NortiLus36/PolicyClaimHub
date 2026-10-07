@@ -55,4 +55,4 @@ ORDER BY sequence;
 ข้อมูลทั้งหมดเป็นข้อมูลจำลองเพื่อการศึกษา ไม่ใช่ข้อมูลลูกค้าหรือเหตุการณ์จริง
 
 ASP.NET เรียก Package นี้ผ่าน ODP.NET ใน `OracleFloodClaimService` โดยตั้ง
-Connection String ผ่าน User Secrets ตาม `docs/ORACLE-CONNECTION.md`
+Connection String ผ่าน User Secrets ด้วย `scripts/configure-oracle-secret.ps1`
